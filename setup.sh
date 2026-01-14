@@ -120,7 +120,8 @@ After=network.target mariadb.service
 User=${APP_USER}
 WorkingDirectory=${APP_DIR}
 ExecStart=/usr/bin/java -jar ${JAR} --spring.config.location=${APP_DIR}/application.properties
-Restart=always
+Restart=on-failure
+RestartSec=100
 SuccessExitStatus=143
 
 [Install]
@@ -138,7 +139,7 @@ IP=$(hostname -I | awk '{print $1}')
 
 echo "===================================="
 echo " BAT is running"
-echo " URL: http://${IP}:8080"
+echo " URL: http://${IP}:8088"
 echo " DB: ${DB_NAME}"
 echo " DB User: ${DB_USER}"
 echo "===================================="
