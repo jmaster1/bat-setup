@@ -14,7 +14,7 @@ GIT_REPO=https://github.com/jmaster1/bat
 DB_NAME=bat
 DB_USER=bat
 
-echo "=== BAT idempotent bootstrap 1.1 ==="
+echo "=== BAT idempotent bootstrap 1.3 ==="
 
 ############################################
 # Linux user/app dir
@@ -77,7 +77,7 @@ mysql -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';"
 mysql -e "FLUSH PRIVILEGES;"
 
 ############################################
-# 6. Git checkout / update
+# Git checkout / update
 ############################################
 GIT_REPO_AUTH="https://${GIT_PAT}@github.com/jmaster1/bat.git"
 if [ ! -d "$APP_REPO_DIR" ]; then
@@ -91,28 +91,25 @@ else
 fi
 
 ############################################
-# 7. Build
+# Build
 ############################################
 cd ${APP_REPO_DIR}
 sudo -u ${APP_USER} mvn clean package -DskipTests
 
-JAR=$(ls target/*.jar | head -n1)
+JAR=${APP_REPO_DIR}/$(ls target/*.jar | head -n1)
+echo "JAR=${JAR}"
 
 ############################################
-# 8. App config
+# App config
 ############################################
 cat > ${APP_DIR}/application.properties <<EOF
-spring.datasource.url=jdbc:mariadb://localhost:3306/${DB_NAME}
-spring.datasource.username=${DB_USER}
 spring.datasource.password=${DB_PASS}
-spring.jpa.hibernate.ddl-auto=update
-server.port=8080
 EOF
 
 chown ${APP_USER}:${APP_USER} ${APP_DIR}/application.properties
 
 ############################################
-# 9. systemd service
+# systemd service
 ############################################
 cat > /etc/systemd/system/bat.service <<EOF
 [Unit]
@@ -135,7 +132,7 @@ systemctl enable bat
 systemctl restart bat
 
 ############################################
-# 10. Output
+# Output
 ############################################
 IP=$(hostname -I | awk '{print $1}')
 
@@ -144,6 +141,4 @@ echo " BAT is running"
 echo " URL: http://${IP}:8080"
 echo " DB: ${DB_NAME}"
 echo " DB User: ${DB_USER}"
-echo " DB Pass: ${DB_PASS}"
-echo " Re-run safe ✔"
 echo "===================================="
