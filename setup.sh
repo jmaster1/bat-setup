@@ -12,7 +12,7 @@ DB_NAME=bat
 DB_USER=bat
 DB_PASS_FILE=/root/.bat-db-pass
 
-echo "=== BAT idempotent bootstrap ==="
+echo "=== BAT idempotent bootstrap 1.0 ==="
 
 ############################################
 # 1. Java 21 + Maven
