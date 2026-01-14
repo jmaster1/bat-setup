@@ -6,16 +6,48 @@ set -x
 APP_NAME=bat
 APP_USER=bat
 APP_DIR=/opt/bat
+SECRETS_FILE=${APP_DIR}/secrets.txt
+
+APP_REPO_DIR=/opt/bat/repo
 GIT_REPO=https://github.com/jmaster1/bat
 
 DB_NAME=bat
 DB_USER=bat
-DB_PASS_FILE=/root/.bat-db-pass
 
-echo "=== BAT idempotent bootstrap 1.2 ==="
+echo "=== BAT idempotent bootstrap 1.1 ==="
 
 ############################################
-# 1. Java 21 + Maven
+# Linux user/app dir
+############################################
+if ! id "$APP_USER" >/dev/null 2>&1; then
+  useradd -r -m -d ${APP_DIR} -s /bin/bash ${APP_USER}
+fi
+
+############################################
+# secrets
+############################################
+if [ ! -f "$SECRETS_FILE" ]; then
+  touch $SECRETS_FILE
+fi
+
+set +x
+source $SECRETS_FILE || true
+
+if [ -z "$DB_PASS" ]; then
+  read -s -p "Enter DB password: " DB_PASS
+  echo
+  echo "DB_PASS=${DB_PASS}" >> $SECRETS_FILE
+fi
+
+if [ -z "$GIT_PAT" ]; then
+  read -s -p "Enter GitHub Personal Access Token: " GIT_PAT
+  echo
+  echo "GIT_PAT=${GIT_PAT}" >> $SECRETS_FILE
+fi
+set -x
+
+############################################
+# Java 21 + Maven
 ############################################
 if ! java -version 2>/dev/null | grep -q "21"; then
   add-apt-repository -y ppa:openjdk-r/ppa
@@ -28,7 +60,7 @@ if ! command -v mvn >/dev/null; then
 fi
 
 ############################################
-# 2. MariaDB
+# MariaDB
 ############################################
 if ! command -v mariadb >/dev/null; then
   apt install -y mariadb-server
@@ -37,15 +69,7 @@ if ! command -v mariadb >/dev/null; then
 fi
 
 ############################################
-# 3. DB password
-############################################
-if [ ! -f "$DB_PASS_FILE" ]; then
-  openssl rand -base64 24 > "$DB_PASS_FILE"
-fi
-DB_PASS=$(cat "$DB_PASS_FILE")
-
-############################################
-# 4. DB + user
+# DB + user
 ############################################
 mysql -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8mb4;"
 mysql -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';"
@@ -53,34 +77,23 @@ mysql -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';"
 mysql -e "FLUSH PRIVILEGES;"
 
 ############################################
-# 5. Linux user
-############################################
-if ! id "$APP_USER" >/dev/null 2>&1; then
-  useradd -r -m -d ${APP_DIR} -s /bin/bash ${APP_USER}
-fi
-
-############################################
 # 6. Git checkout / update
 ############################################
-if [ ! -d "$APP_DIR" ]; then
+GIT_REPO_AUTH="https://${GIT_PAT}@github.com/jmaster1/bat.git"
+if [ ! -d "$APP_REPO_DIR" ]; then
   echo "Cloning repository..."
-  sudo -u ${APP_USER} git clone ${GIT_REPO} ${APP_DIR}
-elif [ -d "$APP_DIR/.git" ]; then
+  sudo -u ${APP_USER} git clone $GIT_REPO_AUTH $APP_REPO_DIR
+else
   echo "Updating repository..."
-  cd ${APP_DIR}
+  cd $APP_REPO_DIR
   sudo -u ${APP_USER} git fetch --all
   sudo -u ${APP_USER} git reset --hard origin/main
-else
-  echo "Directory $APP_DIR exists but is not a git repo. Cleaning up..."
-  rm -rf ${APP_DIR}/*
-  sudo -u ${APP_USER} git clone ${GIT_REPO} ${APP_DIR}
 fi
-
 
 ############################################
 # 7. Build
 ############################################
-cd ${APP_DIR}
+cd ${APP_REPO_DIR}
 sudo -u ${APP_USER} mvn clean package -DskipTests
 
 JAR=$(ls target/*.jar | head -n1)
