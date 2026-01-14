@@ -12,7 +12,7 @@ DB_NAME=bat
 DB_USER=bat
 DB_PASS_FILE=/root/.bat-db-pass
 
-echo "=== BAT idempotent bootstrap 1.0 ==="
+echo "=== BAT idempotent bootstrap 1.1 ==="
 
 ############################################
 # 1. Java 21 + Maven
@@ -63,10 +63,13 @@ fi
 # 6. Git checkout / update
 ############################################
 if [ ! -d "$APP_DIR/.git" ]; then
+  echo "Cloning repository..."
   sudo -u ${APP_USER} git clone ${GIT_REPO} ${APP_DIR}
 else
+  echo "Updating repository..."
   cd ${APP_DIR}
-  sudo -u ${APP_USER} git pull
+  sudo -u ${APP_USER} git fetch --all
+  sudo -u ${APP_USER} git reset --hard origin/main
 fi
 
 ############################################
