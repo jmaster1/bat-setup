@@ -14,7 +14,7 @@ GIT_REPO=https://github.com/jmaster1/bat
 DB_NAME=bat
 DB_USER=bat
 
-echo "=== BAT idempotent bootstrap 1.3 ==="
+echo "=== BAT idempotent bootstrap 1.4 ==="
 
 ############################################
 # Linux user/app dir
@@ -119,7 +119,7 @@ After=network.target mariadb.service
 [Service]
 User=${APP_USER}
 WorkingDirectory=${APP_DIR}
-ExecStart=/usr/bin/java -jar ${JAR} --spring.config.location=${APP_DIR}/application.properties
+ExecStart=/usr/bin/java -jar ${JAR} --spring.datasource.password=${DB_PASS}
 Restart=on-failure
 RestartSec=100
 SuccessExitStatus=143
