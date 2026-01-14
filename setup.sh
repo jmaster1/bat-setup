@@ -1,5 +1,7 @@
 #!/bin/bash
+
 set -e
+set -x
 
 APP_NAME=bat
 APP_USER=bat
