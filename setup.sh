@@ -14,7 +14,7 @@ GIT_REPO=https://github.com/jmaster1/bat
 DB_NAME=bat
 DB_USER=bat
 
-echo "=== BAT idempotent bootstrap 1.4 ==="
+echo "=== BAT idempotent bootstrap 1.5 ==="
 
 ############################################
 # Linux user/app dir
@@ -73,6 +73,7 @@ fi
 ############################################
 mysql -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8mb4;"
 mysql -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';"
+mysql -e "ALTER USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';"
 mysql -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';"
 mysql -e "FLUSH PRIVILEGES;"
 
@@ -98,15 +99,6 @@ sudo -u ${APP_USER} mvn clean package -DskipTests
 
 JAR=${APP_REPO_DIR}/$(ls target/*.jar | head -n1)
 echo "JAR=${JAR}"
-
-############################################
-# App config
-############################################
-cat > ${APP_DIR}/application.properties <<EOF
-spring.datasource.password=${DB_PASS}
-EOF
-
-chown ${APP_USER}:${APP_USER} ${APP_DIR}/application.properties
 
 ############################################
 # systemd service
@@ -139,7 +131,7 @@ IP=$(hostname -I | awk '{print $1}')
 
 echo "===================================="
 echo " BAT is running"
-echo " URL: http://${IP}:8088"
+echo " IP: ${IP}"
 echo " DB: ${DB_NAME}"
 echo " DB User: ${DB_USER}"
 echo "===================================="
