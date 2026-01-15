@@ -6,6 +6,7 @@ set -x
 APP_NAME=bat
 APP_USER=bat
 APP_DIR=/opt/bat
+APP_PORT=8080
 SECRETS_FILE=${APP_DIR}/secrets.txt
 
 APP_REPO_DIR=/opt/bat/repo
@@ -14,7 +15,7 @@ GIT_REPO=https://github.com/jmaster1/bat
 DB_NAME=bat
 DB_USER=bat
 
-echo "=== BAT idempotent bootstrap 1.5 ==="
+echo "=== BAT idempotent bootstrap 1.6 ==="
 
 ############################################
 # Linux user/app dir
@@ -78,9 +79,52 @@ mysql -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';"
 mysql -e "FLUSH PRIVILEGES;"
 
 ############################################
+# Nginx
+############################################
+if ! command -v nginx >/dev/null; then
+  apt install -y nginx
+  systemctl enable nginx
+  systemctl start nginx
+fi
+
+NGINX_SITE=/etc/nginx/sites-available/bat
+
+cat > ${NGINX_SITE} <<'EOF'
+server {
+    listen 80;
+    server_name _;
+
+    location / {
+        proxy_pass http://127.0.0.1:${APP_PORT};
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+EOF
+
+if [ ! -L /etc/nginx/sites-enabled/bat ]; then
+  ln -s /etc/nginx/sites-available/bat /etc/nginx/sites-enabled/bat
+fi
+
+if [ -L /etc/nginx/sites-enabled/default ]; then
+  rm /etc/nginx/sites-enabled/default
+fi
+
+nginx -t
+systemctl reload nginx
+
+############################################
 # Git checkout / update
 ############################################
 GIT_REPO_AUTH="https://${GIT_PAT}@github.com/jmaster1/bat.git"
+
 if [ ! -d "$APP_REPO_DIR" ]; then
   echo "Cloning repository..."
   sudo -u ${APP_USER} git clone $GIT_REPO_AUTH $APP_REPO_DIR
@@ -111,7 +155,7 @@ After=network.target mariadb.service
 [Service]
 User=${APP_USER}
 WorkingDirectory=${APP_DIR}
-ExecStart=/usr/bin/java -jar ${JAR} --spring.datasource.password=${DB_PASS}
+ExecStart=/usr/bin/java -jar ${JAR} --server.port=${APP_PORT} --spring.datasource.password=${DB_PASS}
 Restart=on-failure
 RestartSec=100
 SuccessExitStatus=143
@@ -131,7 +175,7 @@ IP=$(hostname -I | awk '{print $1}')
 
 echo "===================================="
 echo " BAT is running"
-echo " IP: ${IP}"
-echo " DB: ${DB_NAME}"
+echo " APP url: http://${IP}:${APP_PORT}"
+echo " DB name: ${DB_NAME}"
 echo " DB User: ${DB_USER}"
 echo "===================================="
