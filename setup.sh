@@ -15,7 +15,7 @@ GIT_REPO=https://github.com/jmaster1/bat
 DB_NAME=bat
 DB_USER=bat
 
-echo "=== BAT idempotent bootstrap 1.6 ==="
+echo "=== BAT idempotent bootstrap 1.7 ==="
 
 ############################################
 # Linux user/app dir
@@ -89,7 +89,7 @@ fi
 
 NGINX_SITE=/etc/nginx/sites-available/bat
 
-cat > ${NGINX_SITE} <<'EOF'
+cat > ${NGINX_SITE} <<EOF
 server {
     listen 80;
     server_name _;
@@ -98,12 +98,12 @@ server {
         proxy_pass http://127.0.0.1:${APP_PORT};
         proxy_http_version 1.1;
 
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
 
-        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
     }
 }
