@@ -155,7 +155,10 @@ After=network.target mariadb.service
 [Service]
 User=${APP_USER}
 WorkingDirectory=${APP_DIR}
-ExecStart=/usr/bin/java -jar ${JAR} --server.port=${APP_PORT} --spring.datasource.password=${DB_PASS}
+ExecStart=/usr/bin/java -jar ${JAR} \
+--server.port=${APP_PORT} \
+--spring.datasource.password=${DB_PASS} \
+--spring.profiles.active=prod
 Restart=on-failure
 RestartSec=100
 SuccessExitStatus=143
