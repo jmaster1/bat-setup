@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Animated Gradient Glow Borders</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playwrite+IS&display=swap');
+
+@property --a {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+html, body, main { display: grid; }
+html { min-height: 100%; }
+
+body {
+  --b: 16px;
+  --m: 2;
+  background: #0a0a12;
+  place-content: center;
+}
+
+main {
+  grid-gap: calc(3 * var(--m) * var(--b));
+  grid-template-columns: repeat(auto-fit, min(100%, 15em));
+  place-content: center;
+}
+
+svg[aria-hidden="true"] {
+  position: fixed;
+  width: 0;
+  height: 0;
+}
+
+h1 {
+  margin: 0 .25em 2rem;
+  color: #dedede;
+  font: clamp(.625em, 1.5vw + 2vh, 3.75em) "Playwrite IS", cursive;
+  text-align: center;
+  text-wrap: balance;
+}
+
+img {
+  box-sizing: border-box;
+  border: solid var(--b) transparent;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: calc(2 * var(--b));
+  background:
+    repeating-conic-gradient(
+      from var(--a),
+      var(--l, #0000 0% 70%, #0000ff7f)
+    ) border-box;
+  filter: var(--f, url(#glow-0));
+  animation: a 12s linear infinite;
+}
+
+@keyframes a {
+  to { --a: 1turn; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- SVG FILTERS -->
+<svg aria-hidden="true">
+  <filter id="glow-0" x="-0.25" y="-0.25" width="1.5" height="1.5">
+    <feComponentTransfer>
+      <feFuncA type="table" tableValues="0 2 0"/>
+    </feComponentTransfer>
+    <feGaussianBlur stdDeviation="4"/>
+    <feComponentTransfer result="rond">
+      <feFuncA type="table" tableValues="-4 5"/>
+    </feComponentTransfer>
+    <feMorphology operator="dilate" radius="8"/>
+    <feGaussianBlur stdDeviation="16"/>
+    <feBlend in="rond" result="glow"/>
+    <feComponentTransfer in="SourceGraphic">
+      <feFuncA type="table" tableValues="0 0 1"/>
+    </feComponentTransfer>
+    <feBlend in2="glow"/>
+  </filter>
+
+  <filter id="glow-1" x="-0.25" y="-0.25" width="1.5" height="1.5">
+    <feComponentTransfer in="SourceGraphic" result="grad">
+      <feFuncA type="table" tableValues="0 2 0"/>
+    </feComponentTransfer>
+    <feMorphology operator="dilate" radius="8"/>
+    <feGaussianBlur stdDeviation="16" result="glow"/>
+    <feTurbulence type="fractalNoise" baseFrequency="7.13"/>
+    <feDisplacementMap in="glow" scale="32" yChannelSelector="R"/>
+    <feComponentTransfer>
+      <feFuncA type="linear" slope=".8"/>
+    </feComponentTransfer>
+    <feBlend in="grad" result="out"/>
+    <feComponentTransfer in="SourceGraphic">
+      <feFuncA type="table" tableValues="0 0 1"/>
+    </feComponentTransfer>
+    <feBlend in2="out"/>
+  </filter>
+</svg>
+
+<h1>Animated single image gradient glow borders<br>with CSS + SVG filter enhancement</h1>
+
+<main>
+  <img src="https://images.unsplash.com/photo-1512206533059-361c5b6c40a4?w=400">
+
+  <img src="https://images.unsplash.com/photo-1587586062323-836089e60d52?w=400"
+       style="--f:url(#glow-1);
+              --l:#ff45457f,#00ff997f,#006aff7f,#ff00957f,#ff45457f">
+
+  <img src="https://images.unsplash.com/photo-1495287924875-c158d2e8aafc?w=400"
+       style="--l:#0000 0% 35%,#24004619,#3c096c32,#5a189a4b,#7b2cbf64,#9d4edd7f">
+
+  <img src="https://images.unsplash.com/photo-1515056140641-c645caffe247?w=400"
+       style="--f:url(#glow-1);
+              --l:#cb997e7f,#ffe8d67f,#a5a58d7f,#6b705c7f,#cb997e7f">
+
+  <img src="https://images.unsplash.com/photo-1509857820193-a5c67e4c20ab?w=400"
+       style="--l:#0000 0%,#f7258520,#7209b740,#3a0ca360,#4361ee7f">
+
+  <img src="https://images.unsplash.com/photo-1500964757637-c85e8a162699?w=400"
+       style="--f:url(#glow-1);
+              --l:#7bdff27f,#b2f7ef7f,#eff7f67f,#f7d6e07f,#f2b5d47f,#7bdff27f">
+
+  <img src="https://images.unsplash.com/photo-1618741292719-31020a29952c?w=400"
+       style="--l:#0000 0% 85%,#936bff7f 0%,#b892ff7f,#ffc2e27f,#ff90b37f">
+
+  <img src="https://images.unsplash.com/photo-1618681317438-a8dd7da06cd4?w=400"
+       style="--f:url(#glow-1);
+              --l:#7801167f,#f7b5387f,#db7c267f,#d8572a7f,#c32f277f,#7801167f">
+
+  <img src="https://images.unsplash.com/photo-1549888834-3ec93abae044?w=400"
+       style="--l:#0000 0% 25%,#f3b70019 0%,#faa30032,#e57c044b,#ff620164,#f63e027f 50%">
+</main>
+
+</body>
+</html>

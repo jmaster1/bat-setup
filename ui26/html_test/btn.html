@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Exhaust Button</title>
+
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: system-ui, sans-serif;
+
+            background-color: #050507;
+            background-image: repeating-linear-gradient(
+                    0deg,
+                    rgba(255, 255, 255, 0.04) 0,
+                    rgba(255, 255, 255, 0.04) 10px,
+                    transparent 10px,
+                    transparent 20px
+            ),
+            repeating-linear-gradient(
+                    -90deg,
+                    rgba(0, 0, 0, 0.4) 0,
+                    rgba(0, 0, 0, 0.4) 10px,
+                    transparent 10px,
+                    transparent 20px
+            );
+        }
+
+        .exhaust-btn {
+            position: relative;
+            padding: 14px 60px;
+            font-size: 22px;
+            color: #fff;
+            letter-spacing: 1px;
+            text-transform: capitalize;
+            cursor: pointer;
+            border-radius: 6px;
+            background: linear-gradient(
+                    180deg,
+                    #5a0a0a 0%,
+                    #2a0505 45%,
+                    #1a0303 100%
+            );
+            border: 1px solid #ff3b3b;
+            box-shadow: 0 0 6px rgba(255, 60, 60, 0.6),
+            0 0 18px rgba(255, 0, 0, 0.4),
+            inset 0 0 8px rgba(255, 80, 80, 0.4),
+            inset 0 -8px 12px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+        }
+
+        /* внутренний глянец */
+        .exhaust-btn::before {
+            content: "";
+            position: absolute;
+            inset: 2px;
+            border-radius: 4px;
+            background: linear-gradient(
+                    180deg,
+                    rgba(255, 255, 255, 0.15),
+                    rgba(255, 255, 255, 0.02) 40%,
+                    rgba(0, 0, 0, 0.3) 100%
+            );
+            pointer-events: none;
+        }
+
+        /* неоновый кант */
+        .exhaust-btn::after {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            border-radius: 8px;
+            background: linear-gradient(
+                    90deg,
+                    transparent,
+                    #ff2a2a,
+                    #ff6a6a,
+                    #ff2a2a,
+                    transparent
+            );
+            filter: blur(6px);
+            opacity: 0.7;
+            z-index: -1;
+        }
+
+        /* hover */
+        .exhaust-btn:hover {
+            box-shadow: 0 0 10px rgba(255, 80, 80, 0.8),
+            0 0 30px rgba(255, 0, 0, 0.6),
+            inset 0 0 12px rgba(255, 120, 120, 0.6),
+            inset 0 -10px 16px rgba(0, 0, 0, 0.9);
+        }
+
+        /* active */
+        .exhaust-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 0 6px rgba(255, 50, 50, 0.6),
+            inset 0 0 10px rgba(0, 0, 0, 0.9);
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="exhaust-btn">Exhaust</div>
+
+</body>
+</html>

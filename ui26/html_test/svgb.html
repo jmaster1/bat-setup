@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Button with SVG Border</title>
+
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0f0f14;
+    font-family: system-ui, sans-serif;
+  }
+
+  .svg-btn {
+    position: relative;
+    background: transparent;
+    border: none;
+    padding: 14px 36px;
+    cursor: pointer;
+    color: white;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+  }
+
+  .svg-btn svg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .svg-btn span {
+    position: relative;
+    z-index: 1;
+  }
+
+  .svg-btn rect {
+    transition: stroke-width 0.2s ease, filter 0.2s ease;
+  }
+
+  .svg-btn:hover rect {
+    stroke-width: 4;
+    filter: drop-shadow(0 0 8px #9dfe00);
+  }
+</style>
+</head>
+
+<body>
+
+<button class="svg-btn">
+  <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#ff00cc"/>
+        <stop offset="44%" stop-color="#9dfe00"/>
+        <stop offset="100%" stop-color="#3333ff"/>
+      </linearGradient>
+    </defs>
+
+    <rect
+      x="1.5"
+      y="1.5"
+      width="97"
+      height="37"
+      fill="none"
+      stroke="url(#grad)"
+      stroke-width="3"
+    />
+  </svg>
+
+  <span>КНОПКА</span>
+</button>
+
+</body>
+</html>
