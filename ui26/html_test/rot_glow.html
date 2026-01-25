@@ -21,7 +21,7 @@
         --c: #171717;
         --p: 10%;
         position: relative;
-        border-radius: 1rem;
+        border-radius: 0.5rem;
         border: 2px solid transparent;
 
         box-shadow:
@@ -51,8 +51,8 @@
                         rgba(var(--color-hi), 0.1) 71%,
                         transparent 72%
                 ),
-                linear-gradient(var(--c), var(--c)) padding-box,
 
+                linear-gradient(var(--c), var(--c)) padding-box,
 
                 conic-gradient(
                         from var(--gradient-angle, 20deg),
@@ -86,7 +86,7 @@
         content: "";
         position: absolute;
         inset: 0px;
-        border-radius: calc(1rem - 1px);
+        border-radius: 0.5rem;
         border: 2px solid rgba(95, 10, 15, 0.55);
         pointer-events: none;
     }
