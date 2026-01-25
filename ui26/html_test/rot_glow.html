@@ -24,28 +24,40 @@
         border-radius: 1rem;
         border: 2px solid transparent;
 
+        box-shadow:
+                0px 0px 16px rgba(38, 9, 5, 1),
+                10px 10px 10px rgba(0, 0, 0, 0.5);
+
         background:
+                /* red button bg */
                 linear-gradient(
                         180deg,
-                        rgba(var(--color-pri), 0.1) 1%,
-                        rgba(var(--color-pri), 0.3) 20%,
-                        rgba(var(--color-pri), 0.3) 80%,
-                        rgba(var(--color-pri), 0.1) 90%,
+                        rgba(var(--color-pri), 0.3) 0%,
+                        rgba(var(--color-pri), 0.8) 10%,
+                        rgba(var(--color-pri), 0.3) 100%,
                         transparent 99%
                 ),
+
+                /* diag */
                 linear-gradient(
                         -45deg,
                         transparent 10%,
-                        rgba(var(--color-hi), 0.1) 15%,
-                        transparent 20%,
+                        rgba(var(--color-hi), 0.1) 11%,
+                        transparent 12%,
+                        transparent 30%,
                         rgba(var(--color-hi), 0.1) 35%,
-                        transparent 40%
+                        transparent 40%,
+                        transparent 70%,
+                        rgba(var(--color-hi), 0.1) 71%,
+                        transparent 72%
                 ),
                 linear-gradient(var(--c), var(--c)) padding-box,
+
+
                 conic-gradient(
                         from var(--gradient-angle, 20deg),
                         transparent,
-                        red var(--p),
+                        rgba(222, 61, 62, 0.9) var(--p),
                         transparent calc(var(--p) * 2)
                 ) border-box;
     }
@@ -61,14 +73,24 @@
                 conic-gradient(
                         from var(--gradient-angle, 20deg),
                         transparent,
-                        red var(--p),
+                        rgba(204, 101, 102, 0.9) var(--p),
                         transparent calc(var(--p) * 2)
                 );
 
-        filter: blur(10px);
+        filter: blur(20px);
         opacity: 0.7;
         z-index: -1;
     }
+
+    .border-gradient::after {
+        content: "";
+        position: absolute;
+        inset: 0px;
+        border-radius: calc(1rem - 1px);
+        border: 2px solid rgba(95, 10, 15, 0.55);
+        pointer-events: none;
+    }
+
 
     button {
         width: 250px;
