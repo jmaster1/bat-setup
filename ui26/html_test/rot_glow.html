@@ -1,0 +1,55 @@
+<link rel="stylesheet" href="ui26.css"/>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const element = document.querySelector(".border-gradient");
+
+        let angle = 0;
+        const rotateGradient = () => {
+            angle = (angle + 1) % 360; // Increment angle and keep it within 0-360
+            element.style.setProperty("--gradient-angle", `${angle}deg`);
+            requestAnimationFrame(rotateGradient); // Smooth animation loop
+        };
+
+        rotateGradient(); // Start the animation
+    });
+</script>
+<style>
+    @import url("https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,500&display=swap");
+
+    .border-gradient {
+        --c: #171717;
+        --p: 10%;
+        background: linear-gradient(var(--c), var(--c)) padding-box,
+            conic-gradient(
+                    from var(--gradient-angle, 20deg),
+                    transparent,
+                    white var(--p),
+                    transparent calc(var(--p) * 2)
+            )
+            border-box;
+        border: 1px solid transparent;
+    }
+
+    button {
+        width: 250px;
+        height: 80px;
+        border-radius: 1rem;
+        color: white;
+        font-size: 1rem;
+        font-family: "Inter", sans-serif;
+        opacity: 0.6;
+    }
+
+    html,
+    body {
+        height: 100%;
+    }
+
+    body {
+        display: grid;
+        place-items: center;
+    }
+</style>
+<button class="border-gradient">
+    WHY CHOOSE US
+</button>
