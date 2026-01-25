@@ -2,110 +2,101 @@
 <style>
     :root {
         /* Основные цвета */
-        --color-btn-bg: rgba(0, 0, 0, 0.55);
+        --color-btn-bg: rgba(0, 0, 0, 0.25);
         --color-black: rgb(0, 0, 0);
         --color-red: rgb(255, 0, 0);
 
-        /* Неон / акценты */
-        --color-orange: rgb(244, 130, 0);
-        --color-purple: rgb(126, 0, 255);
-        --color-pink: rgb(236, 0, 255);
+        --color-pri: 200, 10, 10;
+        --glow: rgba(var(--color-pri), 0.1);
+        --shadow: rgba(0, 0, 0, 0.5);
 
-        /* Тени */
-        --shadow-red: rgba(255, 0, 0, 0.6);
-        --shadow-pink: rgba(236, 0, 255, 0.5);
-        --shadow-purple: rgba(126, 0, 255, 0.4);
+        --c-b0: rgba(0, 0, 0, 0.0);
+        --c-h1: rgba(250, 200, 200, 1);
+
 
         /* Размеры */
-        --radius-main: 30px;
-        --radius-corner: 23px;
-        --corner-size: 30px;
+        --radius-main: 4px;
         --padding-main: 37px;
     }
 
     #preview {
+        position: relative;
         box-sizing: border-box;
         padding: var(--padding-main);
         border-radius: var(--radius-main);
-        border-color: rgb(51, 51, 51);
+        overflow: visible;
+        /*border: 2px solid;*/
+
 
         box-shadow:
-                0 0 10px var(--shadow-red),
-                0 0 25px var(--shadow-pink),
-                0 0 50px var(--shadow-purple);
+                0px 0px 20px var(--glow),
+                10px 10px 10px var(--shadow);
+
+        /* Неон + цветные подсветки */
+        background:
+                /*radial-gradient(*/
+                /*        at 100% 100%,*/
+                /*        var(--color-orange) 0%,*/
+                /*        transparent 70%*/
+                /*),*/
+                /*radial-gradient(*/
+                /*        at 100% 0%,*/
+                /*        var(--color-purple) 0%,*/
+                /*        transparent 70%*/
+                /*),*/
+                /*radial-gradient(*/
+                /*        at 0% 0%,*/
+                /*        var(--color-red) 0%,*/
+                /*        transparent 70%*/
+                /*);*/
+    }
+
+    #preview::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border: solid 2px rgba(200, 10, 10, 0.25);
+
+        background: var(--color-btn-bg);
+        border-radius: inherit;
+
+        z-index: 0;
+    }
+
+    #preview::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
 
         background:
-            /* Углы */
-                radial-gradient(
-                        circle at 100% 100%,
-                        var(--color-btn-bg) 0px,
-                        var(--color-btn-bg) var(--radius-corner),
-                        transparent var(--radius-corner)
-                ) 0% 0% / var(--corner-size) var(--corner-size) no-repeat,
+                linear-gradient(to right, var(--c-h1) 45%, transparent 55%),
+                linear-gradient(to right, var(--c-h1) 70%, transparent 80%);
 
-                radial-gradient(
-                        circle at 0% 100%,
-                        var(--color-btn-bg) 0px,
-                        var(--color-btn-bg) var(--radius-corner),
-                        transparent var(--radius-corner)
-                ) 100% 0% / var(--corner-size) var(--corner-size) no-repeat,
-
-                radial-gradient(
-                        circle at 100% 0%,
-                        var(--color-btn-bg) 0px,
-                        var(--color-btn-bg) var(--radius-corner),
-                        transparent var(--radius-corner)
-                ) 0% 100% / var(--corner-size) var(--corner-size) no-repeat,
-
-                radial-gradient(
-                        circle at 0% 0%,
-                        var(--color-btn-bg) 0px,
-                        var(--color-btn-bg) var(--radius-corner),
-                        transparent var(--radius-corner)
-                ) 100% 100% / var(--corner-size) var(--corner-size) no-repeat,
-
-                    /* Внутренняя рамка */
-                linear-gradient(
-                        var(--color-btn-bg),
-                        var(--color-btn-bg)
-                ) 50% 50% / calc(100% - 14px) calc(100% - 60px) no-repeat,
-
-                linear-gradient(
-                        var(--color-btn-bg),
-                        var(--color-btn-bg)
-                ) 50% 50% / calc(100% - 60px) calc(100% - 14px) no-repeat,
-
-                    /* Цветные подсветки */
-                radial-gradient(
-                        at 100% 100%,
-                        var(--color-orange) 0%,
-                        transparent 70%
-                ),
-
-                radial-gradient(
-                        at 100% 0%,
-                        var(--color-purple) 0%,
-                        transparent 70%
-                ),
-
-                radial-gradient(
-                        at 0% 0%,
-                        var(--color-pink) 0%,
-                        transparent 70%
-                ),
-
-                    /* Базовый фон */
-                var(--color-red);
-
-        background-blend-mode: normal;
+        box-shadow:
+                0 0 6px var(--c-h1),
+                0 0 12px var(--c-h1);
     }
+
+
+    @keyframes glow {
+        0%, 100% { box-shadow: 0 0 4px var(--c-h1), 0 0 8px var(--c-h1), 0 0 12px var(--c-h1); }
+        50%      { box-shadow: 0 0 6px var(--c-h1), 0 0 12px var(--c-h1), 0 0 18px var(--c-h1); }
+    }
+
+    #preview > * {
+        position: relative;
+        z-index: 1;
+    }
+
 </style>
 
 <body>
-    <div id="preview-container"
-         class="panel-body text-center"
-         style="background-color: black;">
-        <div id="preview">Lorem ipsum</div>
+    <h1>Header 1</h1>
+    <div style="padding: 10px; width: 200px">
+    <div id="preview">Lorem ipsum</div>
     </div>
 </body>
 

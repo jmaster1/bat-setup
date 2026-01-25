@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="ui26.css"/>
 <script>
+    // https://codepen.io/deniscreative/pen/jObmdNW
     document.addEventListener("DOMContentLoaded", () => {
         const element = document.querySelector(".border-gradient");
 
@@ -19,15 +20,54 @@
     .border-gradient {
         --c: #171717;
         --p: 10%;
-        background: linear-gradient(var(--c), var(--c)) padding-box,
-            conic-gradient(
-                    from var(--gradient-angle, 20deg),
-                    transparent,
-                    white var(--p),
-                    transparent calc(var(--p) * 2)
-            )
-            border-box;
-        border: 1px solid transparent;
+        position: relative;
+        border-radius: 1rem;
+        border: 2px solid transparent;
+
+        background:
+                linear-gradient(
+                        180deg,
+                        rgba(var(--color-pri), 0.1) 1%,
+                        rgba(var(--color-pri), 0.3) 20%,
+                        rgba(var(--color-pri), 0.3) 80%,
+                        rgba(var(--color-pri), 0.1) 90%,
+                        transparent 99%
+                ),
+                linear-gradient(
+                        -45deg,
+                        transparent 10%,
+                        rgba(var(--color-hi), 0.1) 15%,
+                        transparent 20%,
+                        rgba(var(--color-hi), 0.1) 35%,
+                        transparent 40%
+                ),
+                linear-gradient(var(--c), var(--c)) padding-box,
+                conic-gradient(
+                        from var(--gradient-angle, 20deg),
+                        transparent,
+                        red var(--p),
+                        transparent calc(var(--p) * 2)
+                ) border-box;
+    }
+
+    /* БЛЮР */
+    .border-gradient::before {
+        content: "";
+        position: absolute;
+        inset: -8px; /* толщина бордера */
+        border-radius: inherit;
+
+        background:
+                conic-gradient(
+                        from var(--gradient-angle, 20deg),
+                        transparent,
+                        red var(--p),
+                        transparent calc(var(--p) * 2)
+                );
+
+        filter: blur(10px);
+        opacity: 0.7;
+        z-index: -1;
     }
 
     button {
@@ -40,15 +80,6 @@
         opacity: 0.6;
     }
 
-    html,
-    body {
-        height: 100%;
-    }
-
-    body {
-        display: grid;
-        place-items: center;
-    }
 </style>
 <button class="border-gradient">
     WHY CHOOSE US
