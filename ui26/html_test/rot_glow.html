@@ -17,14 +17,20 @@
 <style>
     @import url("https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,500&display=swap");
 
+    :root {
+        --g1: 0.3;
+        --g2: 0.8;
+        --g3: 0.3;
+    }
+
     .border-gradient {
         --c: #171717;
         --p: 10%;
         --bg-red: linear-gradient(
                 180deg,
-                rgba(var(--color-pri), 0.3) 0%,
-                rgba(var(--color-pri), 0.8) 10%,
-                rgba(var(--color-pri), 0.3) 100%
+                rgba(var(--color-pri), var(--g1)) 0%,
+                rgba(var(--color-pri), var(--g2)) 10%,
+                rgba(var(--color-pri), var(--g3)) 100%
         );
         --bg-diag: linear-gradient(
                 -45deg,
@@ -91,7 +97,7 @@
     }
 
 
-    button {
+    .button {
         width: 250px;
         height: 80px;
         border-radius: 1rem;
@@ -102,6 +108,22 @@
     }
 
 </style>
-<button class="border-gradient">
+<button class="button border-gradient">
     WHY CHOOSE US
 </button>
+<script>
+    function rand(min, max) {
+        return (Math.random() * (max - min) + min).toFixed(2);
+    }
+
+    function updp(name, value) {
+        document.documentElement.style.setProperty(name, value);
+    }
+
+    function upd() {
+        updp('--g1', rand(1, 1));
+        updp('--g2', rand(1, 1));
+        updp('--g3', rand(1, 1));
+    }
+</script>
+<button onclick="upd()">upd</button>
