@@ -18,9 +18,7 @@
     @import url("https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,500&display=swap");
 
     :root {
-        --g1: 0.3;
-        --g2: 0.8;
-        --g3: 0.3;
+
     }
 
     .border-gradient {
@@ -98,6 +96,10 @@
 
 
     .button {
+        --g1: 0.3;
+        --g2: 0.8;
+        --g3: 0.3;
+
         width: 250px;
         height: 80px;
         border-radius: 1rem;
@@ -108,22 +110,42 @@
     }
 
 </style>
-<button class="button border-gradient">
-    WHY CHOOSE US
+<button id="b1" class="button border-gradient">
+    BUTTON 1
+</button>
+<button id="b2" class="button border-gradient">
+    BUTTON 2
 </button>
 <script>
     function rand(min, max) {
         return (Math.random() * (max - min) + min).toFixed(2);
     }
 
-    function updp(name, value) {
-        document.documentElement.style.setProperty(name, value);
+    function getCssVar(name, el) {
+        if(!el) {
+            el = document.documentElement;
+        }
+        return parseFloat(
+            getComputedStyle(el).getPropertyValue(name)
+        );
+    }
+
+    function setCssVar(name, value, el) {
+        if(!el) {
+            el = document.documentElement;
+        }
+        el.style.setProperty(name, value);
+    }
+
+    function updEl(el) {
+        ['g1', 'g2', 'g3'].forEach(g => {
+            const val = rand(0, 1);
+            setCssVar(`--${g}`, val, el);
+        });
     }
 
     function upd() {
-        updp('--g1', rand(1, 1));
-        updp('--g2', rand(1, 1));
-        updp('--g3', rand(1, 1));
+        document.querySelectorAll('.button').forEach(updEl);
     }
 </script>
 <button onclick="upd()">upd</button>
