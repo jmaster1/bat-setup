@@ -21,12 +21,24 @@
             min-height: 200vh; /* просто чтобы был скролл */
             background-color: #000;
 
-            background-image: url("./bg.svg");
+            background-image:
+                radial-gradient(circle,
+                    rgba(255, 255, 255, 0.21) 0%,
+                    rgba(181, 181, 181, 0.37) 25%,
+                    rgba(0, 0, 0, 0) 100%),
+                url("./bg.svg");
             background-attachment: fixed; /* 🔒 не скроллится */
-            background-position: var(--bg-x) var(--bg-y);
+            background-position:
+                    111px 111px,
+                    var(--bg-x) var(--bg-y);
 
-            background-repeat: repeat;
-            background-size: 400px 400px;
+            background-repeat:
+                    no-repeat,
+                    repeat;
+
+            background-size:
+                    100% 100%,
+                    400px 400px;
         }
     </style>
 </head>
