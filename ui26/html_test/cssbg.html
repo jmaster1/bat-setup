@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Chaotic Rectangles</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #0f0f14;
+        }
+
+        .background {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .rect {
+            position: absolute;
+            opacity: 0.6;
+            mix-blend-mode: screen;
+            animation: float 20s infinite alternate ease-in-out;
+        }
+
+        /* разные прямоугольники */
+        .r1 { width: 300px; height: 180px; background: #ff5f6d; top: 10%; left: 20%; }
+        .r2 { width: 220px; height: 320px; background: #ffc371; top: 40%; left: 10%; }
+        .r3 { width: 400px; height: 200px; background: #42e695; top: 30%; left: 50%; }
+        .r4 { width: 260px; height: 260px; background: #4776e6; top: 60%; left: 60%; }
+        .r5 { width: 500px; height: 140px; background: #8e2de2; top: 15%; left: 65%; }
+
+        @keyframes float {
+            0% {
+                transform: rotate(0deg) translate(0, 0);
+            }
+            100% {
+                transform: rotate(20deg) translate(40px, -30px);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="background">
+    <div class="rect r1"></div>
+    <div class="rect r2"></div>
+    <div class="rect r3"></div>
+    <div class="rect r4"></div>
+    <div class="rect r5"></div>
+</div>
+</body>
+</html>
