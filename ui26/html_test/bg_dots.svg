@@ -25,11 +25,11 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      inkscape:zoom="25.350326"
-     inkscape:cx="21.557908"
-     inkscape:cy="23.175245"
+     inkscape:cx="25.265947"
+     inkscape:cy="34.417703"
      inkscape:window-width="1918"
      inkscape:window-height="2061"
-     inkscape:window-x="1912"
+     inkscape:window-x="1904"
      inkscape:window-y="0"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer1"
@@ -40,7 +40,7 @@
        id="linearGradient6"
        inkscape:collect="always">
       <stop
-         style="stop-color:#000000;stop-opacity:1;"
+         style="stop-color:#0b0b0b;stop-opacity:1;"
          offset="0"
          id="stop6" />
       <stop
@@ -171,15 +171,15 @@
        x2="13.933681"
        y2="9.5720387"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(1.1479495,13.959851)" />
+       gradientTransform="translate(-11.293048,3.4184021)" />
     <filter
        style="color-interpolation-filters:sRGB;"
        inkscape:label="Drop Shadow"
        id="filter42"
-       x="-0.42"
-       y="-0.42"
-       width="1.84"
-       height="1.84">
+       x="-0.54"
+       y="-0.54"
+       width="2.08"
+       height="2.08">
       <feFlood
          result="flood"
          in="SourceGraphic"
@@ -273,6 +273,74 @@
          in2="offset" />
       <feComposite
          id="feComposite57"
+         result="fbSourceGraphic"
+         operator="atop"
+         in="comp1"
+         in2="fbSourceGraphic" />
+      <feColorMatrix
+         result="fbSourceGraphicAlpha"
+         in="fbSourceGraphic"
+         values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0"
+         id="feColorMatrix1" />
+      <feFlood
+         id="feFlood1"
+         result="flood"
+         in="fbSourceGraphic"
+         flood-opacity="1.000000"
+         flood-color="rgb(18,0,0)" />
+      <feGaussianBlur
+         id="feGaussianBlur1"
+         result="blur"
+         in="fbSourceGraphic"
+         stdDeviation="0.100000" />
+      <feOffset
+         id="feOffset1"
+         result="offset"
+         in="blur"
+         dx="0.000000"
+         dy="0.000000" />
+      <feComposite
+         id="feComposite1"
+         result="comp1"
+         operator="out"
+         in="flood"
+         in2="offset" />
+      <feComposite
+         id="feComposite2"
+         result="fbSourceGraphic"
+         operator="atop"
+         in="comp1"
+         in2="fbSourceGraphic" />
+      <feColorMatrix
+         result="fbSourceGraphicAlpha"
+         in="fbSourceGraphic"
+         values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0"
+         id="feColorMatrix2" />
+      <feFlood
+         id="feFlood2"
+         result="flood"
+         in="fbSourceGraphic"
+         flood-opacity="1.000000"
+         flood-color="rgb(18,0,0)" />
+      <feGaussianBlur
+         id="feGaussianBlur2"
+         result="blur"
+         in="fbSourceGraphic"
+         stdDeviation="0.100000" />
+      <feOffset
+         id="feOffset2"
+         result="offset"
+         in="blur"
+         dx="0.000000"
+         dy="0.000000" />
+      <feComposite
+         id="feComposite3"
+         result="comp1"
+         operator="out"
+         in="flood"
+         in2="offset" />
+      <feComposite
+         id="feComposite4"
          result="comp2"
          operator="atop"
          in="comp1"
@@ -284,22 +352,22 @@
      inkscape:groupmode="layer"
      id="layer1">
     <circle
-       style="fill:url(#linearGradient7);stroke:none;stroke-width:0.2;stroke-dasharray:none;filter:url(#filter42)"
+       style="fill:url(#linearGradient7);stroke:none;stroke-width:0.2;stroke-dasharray:none;filter:url(#filter42);stroke-opacity:1"
        id="path2"
-       cx="15.081632"
-       cy="25.531895"
+       cx="2.6406345"
+       cy="14.990446"
        r="2" />
     <use
        x="0"
        y="0"
        xlink:href="#path2"
        id="use57"
-       transform="translate(-12.228206,-22.781791)" />
+       transform="translate(0.21279114,-12.240342)" />
     <use
        x="0"
        y="0"
        xlink:href="#path2"
        id="use58"
-       transform="translate(-7.3506084,-17.668028)" />
+       transform="translate(5.0903887,-7.1265791)" />
   </g>
 </svg>

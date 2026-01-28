@@ -2,6 +2,7 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
+   preserveAspectRatio="none"
    width="40"
    height="40"
    viewBox="0 0 10.583333 10.583333"
@@ -24,12 +25,12 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="25.350326"
-     inkscape:cx="21.557908"
-     inkscape:cy="23.175245"
+     inkscape:zoom="17.925387"
+     inkscape:cx="14.644035"
+     inkscape:cy="0.418401"
      inkscape:window-width="1918"
      inkscape:window-height="2061"
-     inkscape:window-x="1912"
+     inkscape:window-x="1904"
      inkscape:window-y="0"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer1"
@@ -37,29 +38,24 @@
   <defs
      id="defs1">
     <linearGradient
-       id="linearGradient58"
+       id="linearGradient6"
        inkscape:collect="always">
       <stop
-         style="stop-color:#000000;stop-opacity:0;"
+         style="stop-color:#030000;stop-opacity:1;"
          offset="0"
-         id="stop58" />
+         id="stop6" />
       <stop
-         style="stop-color:#000000;stop-opacity:0;"
-         offset="0.09007353"
-         id="stop60" />
-      <stop
-         style="stop-color:#ffffff;stop-opacity:0.30000001;"
-         offset="0.12316176"
-         id="stop61" />
-      <stop
-         style="stop-color:#000000;stop-opacity:0;"
-         offset="0.16727941"
-         id="stop62" />
-      <stop
-         style="stop-color:#000000;stop-opacity:0;"
+         style="stop-color:#120000;stop-opacity:1;"
          offset="1"
-         id="stop59" />
+         id="stop7" />
     </linearGradient>
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 5.2916665 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="10.583333 : 5.2916665 : 1"
+       inkscape:persp3d-origin="5.2916665 : 3.5277777 : 1"
+       id="perspective1" />
     <filter
        style="color-interpolation-filters:sRGB"
        inkscape:label="Drop Shadow"
@@ -280,14 +276,16 @@
          in="comp1"
          in2="fbSourceGraphic" />
     </filter>
-    <linearGradient
+    <radialGradient
        inkscape:collect="always"
-       xlink:href="#linearGradient58"
-       id="linearGradient62"
-       x1="0.80664742"
-       y1="2.2768047"
-       x2="9.1933537"
-       y2="7.723197"
+       xlink:href="#linearGradient6"
+       id="radialGradient7"
+       cx="5.2841725"
+       cy="5.2767916"
+       fx="5.2841725"
+       fy="5.2767916"
+       r="5.269412"
+       gradientTransform="matrix(1,0,0,1.0042016,0,-0.02217103)"
        gradientUnits="userSpaceOnUse" />
   </defs>
   <g
@@ -295,11 +293,11 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:url(#linearGradient62);stroke:none;stroke-width:0.2;stroke-dasharray:none"
-       id="rect58"
-       width="10"
-       height="10"
-       x="0"
-       y="0" />
+       style="fill:url(#radialGradient7);fill-opacity:1;stroke-width:0.2"
+       id="rect6"
+       width="10.538824"
+       height="10.583104"
+       x="0.014760258"
+       y="-0.014760258" />
   </g>
 </svg>

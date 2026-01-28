@@ -23,7 +23,7 @@
             overflow-x: hidden;
         }
 
-        body::before {
+        body::after {
             content: "";
             position: fixed;
             inset: 0;
@@ -31,12 +31,12 @@
             z-index: -2;
         }
 
-        body::after {
+        body::before {
             content: "";
             position: fixed;
             inset: 0;
             background: url("./bg_dots.svg") repeat;
-            background-size: 20px 20px;
+            background-size: 30px 30px;
             background-position: var(--bg-x) var(--bg-y);
             z-index: -1;
         }
