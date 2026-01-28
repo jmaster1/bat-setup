@@ -4,8 +4,8 @@
 <svg
    preserveAspectRatio="none"
    width="40"
-   height="40"
-   viewBox="0 0 10.583333 10.583333"
+   height="30"
+   viewBox="0 0 10.583333 7.9374997"
    version="1.1"
    id="svg1"
    inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
@@ -20,14 +20,14 @@
      pagecolor="#2c2c2c"
      bordercolor="#000000"
      borderopacity="0.25"
-     inkscape:showpageshadow="2"
+     inkscape:showpageshadow="false"
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="17.925387"
-     inkscape:cx="14.644035"
-     inkscape:cy="0.418401"
+     inkscape:zoom="25.350326"
+     inkscape:cx="16.824241"
+     inkscape:cy="26.054892"
      inkscape:window-width="1918"
      inkscape:window-height="2061"
      inkscape:window-x="1904"
@@ -41,20 +41,20 @@
        id="linearGradient6"
        inkscape:collect="always">
       <stop
-         style="stop-color:#030000;stop-opacity:1;"
+         style="stop-color:#000000;stop-opacity:1;"
          offset="0"
          id="stop6" />
       <stop
-         style="stop-color:#120000;stop-opacity:1;"
+         style="stop-color:#000000;stop-opacity:0;"
          offset="1"
          id="stop7" />
     </linearGradient>
     <inkscape:perspective
        sodipodi:type="inkscape:persp3d"
-       inkscape:vp_x="0 : 5.2916665 : 1"
-       inkscape:vp_y="0 : 1000 : 0"
-       inkscape:vp_z="10.583333 : 5.2916665 : 1"
-       inkscape:persp3d-origin="5.2916665 : 3.5277777 : 1"
+       inkscape:vp_x="0 : 2.6458337 : 1"
+       inkscape:vp_y="0 : 999.99999 : 0"
+       inkscape:vp_z="10.583333 : 2.6458337 : 1"
+       inkscape:persp3d-origin="5.2916665 : 0.8819447 : 1"
        id="perspective1" />
     <filter
        style="color-interpolation-filters:sRGB"
@@ -171,11 +171,11 @@
          id="feComposite12" />
     </filter>
     <filter
-       style="color-interpolation-filters:sRGB;"
+       style="color-interpolation-filters:sRGB"
        inkscape:label="Drop Shadow"
        id="filter42"
-       x="-0.42"
-       y="-0.42"
+       x="-0.41999999"
+       y="-0.41999999"
        width="1.84"
        height="1.84">
       <feFlood
@@ -285,7 +285,7 @@
        fx="5.2841725"
        fy="5.2767916"
        r="5.269412"
-       gradientTransform="matrix(1,0,0,1.0042016,0,-0.02217103)"
+       gradientTransform="matrix(0.97909908,0,0,0.45952947,3.3203921,2.5493698)"
        gradientUnits="userSpaceOnUse" />
   </defs>
   <g
@@ -293,11 +293,23 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:url(#radialGradient7);fill-opacity:1;stroke-width:0.2"
+       style="fill:url(#radialGradient7);stroke-width:0.133872"
        id="rect6"
-       width="10.538824"
-       height="10.583104"
-       x="0.014760258"
-       y="-0.014760258" />
+       width="10.318553"
+       height="4.8429003"
+       x="3.3348436"
+       y="2.5527611" />
+    <use
+       x="0"
+       y="0"
+       xlink:href="#rect6"
+       id="use7"
+       transform="matrix(1,0,0,0.63147282,-6.3457435,-1.3553954)" />
+    <use
+       x="0"
+       y="0"
+       xlink:href="#rect6"
+       id="use8"
+       transform="matrix(0.59338238,0,0,2.5926408,-4.1965194,-8.92931)" />
   </g>
 </svg>
