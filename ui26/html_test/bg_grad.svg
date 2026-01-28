@@ -8,7 +8,7 @@
    version="1.1"
    id="svg1"
    inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
-   sodipodi:docname="bg.svg"
+   sodipodi:docname="bg_grad.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -37,16 +37,28 @@
   <defs
      id="defs1">
     <linearGradient
-       id="linearGradient6"
+       id="linearGradient58"
        inkscape:collect="always">
       <stop
-         style="stop-color:#000000;stop-opacity:1;"
+         style="stop-color:#000000;stop-opacity:0;"
          offset="0"
-         id="stop6" />
+         id="stop58" />
       <stop
-         style="stop-color:#161616;stop-opacity:1;"
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="0.09007353"
+         id="stop60" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0.30000001;"
+         offset="0.12316176"
+         id="stop61" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="0.16727941"
+         id="stop62" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
          offset="1"
-         id="stop7" />
+         id="stop59" />
     </linearGradient>
     <filter
        style="color-interpolation-filters:sRGB"
@@ -162,16 +174,6 @@
          in2="comp1"
          id="feComposite12" />
     </filter>
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient6"
-       id="linearGradient7"
-       x1="13.933681"
-       y1="13.572049"
-       x2="13.933681"
-       y2="9.5720387"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(1.1479495,13.959851)" />
     <filter
        style="color-interpolation-filters:sRGB;"
        inkscape:label="Drop Shadow"
@@ -278,28 +280,26 @@
          in="comp1"
          in2="fbSourceGraphic" />
     </filter>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient58"
+       id="linearGradient62"
+       x1="0.80664742"
+       y1="2.2768047"
+       x2="9.1933537"
+       y2="7.723197"
+       gradientUnits="userSpaceOnUse" />
   </defs>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <circle
-       style="fill:url(#linearGradient7);stroke:none;stroke-width:0.2;stroke-dasharray:none;filter:url(#filter42)"
-       id="path2"
-       cx="15.081632"
-       cy="25.531895"
-       r="2" />
-    <use
+    <rect
+       style="fill:url(#linearGradient62);stroke:none;stroke-width:0.2;stroke-dasharray:none"
+       id="rect58"
+       width="10"
+       height="10"
        x="0"
-       y="0"
-       xlink:href="#path2"
-       id="use57"
-       transform="translate(-12.228206,-22.781791)" />
-    <use
-       x="0"
-       y="0"
-       xlink:href="#path2"
-       id="use58"
-       transform="translate(-7.3506084,-17.668028)" />
+       y="0" />
   </g>
 </svg>
