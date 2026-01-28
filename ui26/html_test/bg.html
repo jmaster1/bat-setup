@@ -5,7 +5,6 @@
     <title>SVG Background</title>
     <style>
         :root {
-            /* 👇 управляем смещением тут */
             --bg-x: 0%;
             --bg-y: 0%;
             --bg-scale: 120%;
@@ -20,22 +19,26 @@
         body {
             min-height: 200vh;
             background-color: #111;
+            position: relative;
+            overflow-x: hidden;
+        }
 
-            background-image:
-                url("./bg_dots.svg"),
-                url("./bg_grad.svg");
-            background-attachment:
-                fixed,
-                fixed;
-            background-position:
-                var(--bg-x) var(--bg-y),
-                0 0;
-            background-repeat:
-                repeat,
-                no-repeat;
-            background-size:
-                20px 20px,
-                100% 100%;
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: url("./bg_grad.svg") no-repeat 0 0 / 100% 100%;
+            z-index: -2;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: url("./bg_dots.svg") repeat;
+            background-size: 20px 20px;
+            background-position: var(--bg-x) var(--bg-y);
+            z-index: -1;
         }
     </style>
 </head>
