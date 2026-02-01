@@ -37,3 +37,5 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl start dynomax
 sudo systemctl enable dynomax
+
+mvn clean install -Dconfig=dev -Ddeployment -DskipTests=true
