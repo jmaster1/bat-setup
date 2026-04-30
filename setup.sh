@@ -14,6 +14,7 @@ GIT_REPO=https://github.com/jmaster1/bat
 
 DB_NAME=bat
 DB_USER=bat
+FIREBASE_CREDENTIALS_JSON=
 
 echo "=== BAT idempotent bootstrap 1.7 ==="
 
@@ -147,6 +148,13 @@ echo "JAR=${JAR}"
 ############################################
 # systemd service
 ############################################
+FIREBASE_CREDENTIALS_JSON=$(find "${APP_DIR}" -maxdepth 1 -type f -name '*firebase-adminsdk*.json' | head -n1 || true)
+
+if [ -z "${FIREBASE_CREDENTIALS_JSON}" ]; then
+  echo "Firebase credentials JSON not found in ${APP_DIR}" >&2
+  exit 1
+fi
+
 cat > /etc/systemd/system/bat.service <<EOF
 [Unit]
 Description=BAT Server
@@ -158,6 +166,7 @@ WorkingDirectory=${APP_DIR}
 ExecStart=/usr/bin/java -jar ${JAR} \
 --server.port=${APP_PORT} \
 --spring.datasource.password=${DB_PASS} \
+--firebase.credentials.location=file:${FIREBASE_CREDENTIALS_JSON} \
 --spring.profiles.active=prod
 Restart=on-failure
 RestartSec=100
@@ -170,6 +179,8 @@ EOF
 systemctl daemon-reload
 systemctl enable bat
 systemctl restart bat
+
+echo "Firebase credentials: ${FIREBASE_CREDENTIALS_JSON}"
 
 ############################################
 # Output
