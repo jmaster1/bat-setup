@@ -15,6 +15,7 @@ GIT_REPO=https://github.com/jmaster1/bat
 DB_NAME=bat
 DB_USER=bat
 FIREBASE_CREDENTIALS_JSON=
+GIT_AUTH_HEADER=
 
 echo "=== BAT idempotent bootstrap 1.7 ==="
 
@@ -124,15 +125,21 @@ systemctl reload nginx
 ############################################
 # Git checkout / update
 ############################################
-GIT_REPO_AUTH="https://${GIT_PAT}@github.com/jmaster1/bat.git"
+set +x
+GIT_AUTH_HEADER=$(printf 'x-access-token:%s' "${GIT_PAT}" | base64 -w0)
+set -x
 
 if [ ! -d "$APP_REPO_DIR" ]; then
   echo "Cloning repository..."
-  sudo -u ${APP_USER} git clone $GIT_REPO_AUTH $APP_REPO_DIR
+  set +x
+  sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" clone ${GIT_REPO} $APP_REPO_DIR
+  set -x
 else
   echo "Updating repository..."
   cd $APP_REPO_DIR
-  sudo -u ${APP_USER} git fetch --all
+  set +x
+  sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" fetch --all
+  set -x
   sudo -u ${APP_USER} git reset --hard origin/main
 fi
 
