@@ -7,6 +7,8 @@ APP_NAME=bat
 APP_USER=bat
 APP_DIR=/opt/bat
 APP_PORT=8080
+APP_DOMAIN=tablepass.app
+APP_WWW_DOMAIN=www.tablepass.app
 SECRETS_FILE=${APP_DIR}/secrets.txt
 
 APP_REPO_DIR=/opt/bat/repo
@@ -17,7 +19,7 @@ DB_USER=bat
 FIREBASE_CREDENTIALS_JSON=
 GIT_AUTH_HEADER=
 
-echo "=== BAT idempotent bootstrap 1.7 ==="
+echo "=== BAT idempotent bootstrap 1.8 ==="
 
 ############################################
 # Linux user/app dir
@@ -46,6 +48,11 @@ if [ -z "$GIT_PAT" ]; then
   read -s -p "Enter GitHub Personal Access Token: " GIT_PAT
   echo
   echo "GIT_PAT=${GIT_PAT}" >> $SECRETS_FILE
+fi
+
+if [ -z "$LETSENCRYPT_EMAIL" ]; then
+  read -p "Enter Let's Encrypt email: " LETSENCRYPT_EMAIL
+  echo "LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}" >> $SECRETS_FILE
 fi
 set -x
 
@@ -89,12 +96,14 @@ if ! command -v nginx >/dev/null; then
   systemctl start nginx
 fi
 
+apt install -y certbot python3-certbot-nginx
+
 NGINX_SITE=/etc/nginx/sites-available/bat
 
 cat > ${NGINX_SITE} <<EOF
 server {
     listen 80;
-    server_name _;
+    server_name ${APP_DOMAIN} ${APP_WWW_DOMAIN};
 
     location / {
         proxy_pass http://127.0.0.1:${APP_PORT};
@@ -121,6 +130,15 @@ fi
 
 nginx -t
 systemctl reload nginx
+
+certbot --nginx \
+  --non-interactive \
+  --agree-tos \
+  --email ${LETSENCRYPT_EMAIL} \
+  --redirect \
+  --keep-until-expiring \
+  -d ${APP_DOMAIN} \
+  -d ${APP_WWW_DOMAIN}
 
 ############################################
 # Git checkout / update
