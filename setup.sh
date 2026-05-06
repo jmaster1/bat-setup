@@ -1,7 +1,11 @@
 #!/bin/bash
 
-set -e
+set -Ee
+set -o pipefail
 set -x
+
+shopt -s inherit_errexit 2>/dev/null || true
+trap 'echo "ERROR: setup.sh failed at line ${LINENO} while running: ${BASH_COMMAND}" >&2' ERR
 
 APP_NAME=bat
 APP_USER=bat
@@ -26,6 +30,7 @@ DB_NAME=bat
 DB_USER=bat
 FIREBASE_CREDENTIALS_JSON=
 GIT_AUTH_HEADER=
+BUILD_RELEASE_JAR=
 
 echo "=== BAT idempotent bootstrap 2.0 (${MODE}) ==="
 
@@ -204,6 +209,7 @@ find_firebase_credentials() {
 
 build_release() {
   local release_dir=${RELEASES_DIR}/$(date -u +%Y%m%d%H%M%S)
+  local jar=
   mkdir -p "$release_dir"
 
   cd "$APP_REPO_DIR"
@@ -213,14 +219,17 @@ build_release() {
   set -x
 
   sudo -u ${APP_USER} git reset --hard origin/main >&2
-  sudo -u ${APP_USER} mvn package -DskipTests >&2
+  sudo -u ${APP_USER} mvn clean package -DskipTests >&2
 
-  local jar
-  jar=$(ls target/${APP_NAME}-*.jar | grep -v '\.original$' | head -n1)
+  jar=$(find target -maxdepth 1 -type f -name "${APP_NAME}-*.jar" ! -name "*.original" -print -quit)
+  if [ -z "$jar" ]; then
+    echo "Build succeeded but jar was not found in ${APP_REPO_DIR}/target" >&2
+    exit 1
+  fi
+
   cp "$jar" "${release_dir}/${APP_NAME}.jar"
   chown -R ${APP_USER}:${APP_USER} "$release_dir"
-
-  echo "${release_dir}/${APP_NAME}.jar"
+  BUILD_RELEASE_JAR="${release_dir}/${APP_NAME}.jar"
 }
 
 ############################################
@@ -244,7 +253,8 @@ if [ "$MODE" = "deploy" ]; then
     exit 1
   fi
 
-  NEW_JAR=$(build_release)
+  build_release
+  NEW_JAR=$BUILD_RELEASE_JAR
   ACTIVE_PORT=$(detect_active_port)
   NEXT_PORT=$(other_port "$ACTIVE_PORT")
   ACTIVE_SERVICE=$(service_name_for_port "$ACTIVE_PORT")
@@ -434,7 +444,8 @@ fi
 # Build/release
 ############################################
 find_firebase_credentials
-JAR=$(build_release)
+build_release
+JAR=$BUILD_RELEASE_JAR
 echo "JAR=${JAR}"
 
 ############################################
