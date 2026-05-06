@@ -6,7 +6,6 @@ set -x
 APP_NAME=bat
 APP_USER=bat
 APP_DIR=/opt/bat
-APP_PORT=8080
 APP_DOMAIN=tablepass.app
 APP_WWW_DOMAIN=www.tablepass.app
 SECRETS_FILE=${APP_DIR}/secrets.txt
@@ -15,30 +14,156 @@ APP_REPO_DIR=/opt/bat/repo
 GIT_REPO=https://github.com/jmaster1/bat
 MODE=${1:-bootstrap}
 
+BLUE_PORT=8088
+GREEN_PORT=8089
+ACTIVE_PORT_FILE=${APP_DIR}/active-port
+RELEASES_DIR=${APP_DIR}/releases
+NGINX_SITE=/etc/nginx/sites-available/bat
+NGINX_UPSTREAM_SNIPPET=/etc/nginx/snippets/bat-upstream.conf
+HEALTH_TIMEOUT_SECONDS=90
+
 DB_NAME=bat
 DB_USER=bat
 FIREBASE_CREDENTIALS_JSON=
 GIT_AUTH_HEADER=
 
-echo "=== BAT idempotent bootstrap 1.9 (${MODE}) ==="
+echo "=== BAT idempotent bootstrap 2.0 (${MODE}) ==="
 
 ############################################
-# Fast modes
+# Helpers
 ############################################
-if [ "$MODE" = "restart" ]; then
-  systemctl restart bat
-  systemctl status bat --no-pager -l
-  exit 0
-fi
+service_name_for_port() {
+  local port=$1
+  if [ "$port" = "$BLUE_PORT" ]; then
+    echo "${APP_NAME}-blue"
+  elif [ "$port" = "$GREEN_PORT" ]; then
+    echo "${APP_NAME}-green"
+  else
+    echo "Unknown BAT port: ${port}" >&2
+    exit 1
+  fi
+}
 
-if [ "$MODE" = "deploy" ]; then
+other_port() {
+  local port=$1
+  if [ "$port" = "$BLUE_PORT" ]; then
+    echo "$GREEN_PORT"
+  else
+    echo "$BLUE_PORT"
+  fi
+}
+
+is_known_app_port() {
+  local port=$1
+  [ "$port" = "$BLUE_PORT" ] || [ "$port" = "$GREEN_PORT" ]
+}
+
+detect_active_port() {
+  if [ -f "$ACTIVE_PORT_FILE" ]; then
+    local file_port
+    file_port=$(cat "$ACTIVE_PORT_FILE")
+    if is_known_app_port "$file_port"; then
+      echo "$file_port"
+      return
+    fi
+  fi
+
+  if [ -f "$NGINX_UPSTREAM_SNIPPET" ]; then
+    local detected_port
+    detected_port=$(grep -oE '127\.0\.0\.1:[0-9]+' "$NGINX_UPSTREAM_SNIPPET" | head -n1 | cut -d: -f2 || true)
+    if is_known_app_port "$detected_port"; then
+      echo "$detected_port"
+      return
+    fi
+  fi
+
+  if [ -f "$NGINX_SITE" ]; then
+    local site_port
+    site_port=$(grep -oE '127\.0\.0\.1:[0-9]+' "$NGINX_SITE" | head -n1 | cut -d: -f2 || true)
+    if is_known_app_port "$site_port"; then
+      echo "$site_port"
+      return
+    fi
+
+    if systemctl is-active --quiet bat; then
+      echo "$BLUE_PORT"
+      return
+    fi
+  fi
+
+  echo "$BLUE_PORT"
+}
+
+write_bat_service() {
+  local color=$1
+  local port=$2
+  local jar=$3
+
+  cat > /etc/systemd/system/${APP_NAME}-${color}.service <<EOF
+[Unit]
+Description=BAT Server (${color})
+After=network.target mariadb.service
+
+[Service]
+User=${APP_USER}
+WorkingDirectory=${APP_DIR}
+ExecStart=/usr/bin/java -jar ${jar} \\
+--server.port=${port} \\
+--bat.instance-id=${color} \\
+--spring.datasource.password=${DB_PASS} \\
+--firebase.credentials.location=file:${FIREBASE_CREDENTIALS_JSON} \\
+--spring.profiles.active=prod
+Restart=on-failure
+RestartSec=100
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target
+EOF
+}
+
+write_bat_services() {
+  local jar=$1
+  write_bat_service blue "$BLUE_PORT" "$jar"
+  write_bat_service green "$GREEN_PORT" "$jar"
+  systemctl daemon-reload
+}
+
+write_nginx_upstream() {
+  local port=$1
+  mkdir -p "$(dirname "$NGINX_UPSTREAM_SNIPPET")"
+  cat > "$NGINX_UPSTREAM_SNIPPET" <<EOF
+proxy_pass http://127.0.0.1:${port};
+EOF
+}
+
+reload_nginx() {
+  nginx -t
+  systemctl reload nginx
+}
+
+wait_for_health() {
+  local port=$1
+  local deadline=$((SECONDS + HEALTH_TIMEOUT_SECONDS))
+
+  until curl -fsS "http://127.0.0.1:${port}/actuator/health" >/dev/null; do
+    if [ "$SECONDS" -ge "$deadline" ]; then
+      echo "Health check failed on port ${port}" >&2
+      journalctl -u "$(service_name_for_port "$port")" --no-pager -n 120 >&2 || true
+      exit 1
+    fi
+    sleep 2
+  done
+}
+
+load_secrets_for_deploy() {
   if [ ! -f "$SECRETS_FILE" ]; then
     echo "Secrets file not found: ${SECRETS_FILE}" >&2
     exit 1
   fi
 
   set +x
-  source $SECRETS_FILE
+  source "$SECRETS_FILE"
 
   if [ -z "$GIT_PAT" ]; then
     echo "GIT_PAT is not set in ${SECRETS_FILE}" >&2
@@ -47,23 +172,93 @@ if [ "$MODE" = "deploy" ]; then
 
   GIT_AUTH_HEADER=$(printf 'x-access-token:%s' "${GIT_PAT}" | base64 -w0)
   set -x
+}
+
+find_firebase_credentials() {
+  FIREBASE_CREDENTIALS_JSON=$(find "${APP_DIR}" -maxdepth 1 -type f -name '*firebase-adminsdk*.json' | head -n1 || true)
+
+  if [ -z "${FIREBASE_CREDENTIALS_JSON}" ]; then
+    echo "Firebase credentials JSON not found in ${APP_DIR}" >&2
+    exit 1
+  fi
+}
+
+build_release() {
+  local release_dir=${RELEASES_DIR}/$(date -u +%Y%m%d%H%M%S)
+  mkdir -p "$release_dir"
+
+  cd "$APP_REPO_DIR"
+
+  set +x
+  sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" fetch origin main >&2
+  set -x
+
+  sudo -u ${APP_USER} git reset --hard origin/main >&2
+  sudo -u ${APP_USER} mvn package -DskipTests >&2
+
+  local jar
+  jar=$(ls target/${APP_NAME}-*.jar | grep -v '\.original$' | head -n1)
+  cp "$jar" "${release_dir}/${APP_NAME}.jar"
+  chown -R ${APP_USER}:${APP_USER} "$release_dir"
+
+  echo "${release_dir}/${APP_NAME}.jar"
+}
+
+############################################
+# Fast modes
+############################################
+if [ "$MODE" = "restart" ]; then
+  ACTIVE_PORT=$(detect_active_port)
+  ACTIVE_SERVICE=$(service_name_for_port "$ACTIVE_PORT")
+  systemctl restart "$ACTIVE_SERVICE"
+  wait_for_health "$ACTIVE_PORT"
+  systemctl status "$ACTIVE_SERVICE" --no-pager -l
+  exit 0
+fi
+
+if [ "$MODE" = "deploy" ]; then
+  load_secrets_for_deploy
+  find_firebase_credentials
 
   if [ ! -d "$APP_REPO_DIR" ]; then
     echo "Repository not found: ${APP_REPO_DIR}. Run bootstrap first." >&2
     exit 1
   fi
 
-  cd $APP_REPO_DIR
+  NEW_JAR=$(build_release)
+  ACTIVE_PORT=$(detect_active_port)
+  NEXT_PORT=$(other_port "$ACTIVE_PORT")
+  ACTIVE_SERVICE=$(service_name_for_port "$ACTIVE_PORT")
+  NEXT_SERVICE=$(service_name_for_port "$NEXT_PORT")
 
-  set +x
-  sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" fetch origin main
-  set -x
+  if [ "$NEXT_PORT" = "$BLUE_PORT" ]; then
+    write_bat_service blue "$NEXT_PORT" "$NEW_JAR"
+  else
+    write_bat_service green "$NEXT_PORT" "$NEW_JAR"
+  fi
 
-  sudo -u ${APP_USER} git reset --hard origin/main
-  sudo -u ${APP_USER} mvn package -DskipTests
+  systemctl daemon-reload
+  systemctl enable "$NEXT_SERVICE"
+  systemctl restart "$NEXT_SERVICE"
+  wait_for_health "$NEXT_PORT"
 
-  systemctl restart bat
-  systemctl status bat --no-pager -l
+  write_nginx_upstream "$NEXT_PORT"
+  reload_nginx
+  echo "$NEXT_PORT" > "$ACTIVE_PORT_FILE"
+
+  systemctl stop "$ACTIVE_SERVICE" || true
+  systemctl disable "$ACTIVE_SERVICE" || true
+  systemctl stop bat || true
+  systemctl disable bat || true
+  systemctl status "$NEXT_SERVICE" --no-pager -l
+
+  echo "===================================="
+  echo " BAT deploy complete"
+  echo " Active service: ${NEXT_SERVICE}"
+  echo " Active port: ${NEXT_PORT}"
+  echo " Old service stopped: ${ACTIVE_SERVICE}"
+  echo " Sessions on old instance were dropped"
+  echo "===================================="
   exit 0
 fi
 
@@ -74,6 +269,9 @@ if ! id "$APP_USER" >/dev/null 2>&1; then
   useradd -r -m -d ${APP_DIR} -s /bin/bash ${APP_USER}
 fi
 
+mkdir -p "$RELEASES_DIR"
+chown -R ${APP_USER}:${APP_USER} "$APP_DIR"
+
 ############################################
 # secrets
 ############################################
@@ -82,23 +280,23 @@ if [ ! -f "$SECRETS_FILE" ]; then
 fi
 
 set +x
-source $SECRETS_FILE || true
+source "$SECRETS_FILE" || true
 
 if [ -z "$DB_PASS" ]; then
   read -s -p "Enter DB password: " DB_PASS
   echo
-  echo "DB_PASS=${DB_PASS}" >> $SECRETS_FILE
+  echo "DB_PASS=${DB_PASS}" >> "$SECRETS_FILE"
 fi
 
 if [ -z "$GIT_PAT" ]; then
   read -s -p "Enter GitHub Personal Access Token: " GIT_PAT
   echo
-  echo "GIT_PAT=${GIT_PAT}" >> $SECRETS_FILE
+  echo "GIT_PAT=${GIT_PAT}" >> "$SECRETS_FILE"
 fi
 
 if [ -z "$LETSENCRYPT_EMAIL" ]; then
   read -p "Enter Let's Encrypt email: " LETSENCRYPT_EMAIL
-  echo "LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}" >> $SECRETS_FILE
+  echo "LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}" >> "$SECRETS_FILE"
 fi
 set -x
 
@@ -113,6 +311,10 @@ fi
 
 if ! command -v mvn >/dev/null; then
   apt install -y maven
+fi
+
+if ! command -v curl >/dev/null; then
+  apt install -y curl
 fi
 
 ############################################
@@ -144,7 +346,7 @@ fi
 
 apt install -y certbot python3-certbot-nginx
 
-NGINX_SITE=/etc/nginx/sites-available/bat
+write_nginx_upstream "$BLUE_PORT"
 
 cat > ${NGINX_SITE} <<EOF
 server {
@@ -152,7 +354,7 @@ server {
     server_name ${APP_DOMAIN} ${APP_WWW_DOMAIN};
 
     location / {
-        proxy_pass http://127.0.0.1:${APP_PORT};
+        include ${NGINX_UPSTREAM_SNIPPET};
         proxy_http_version 1.1;
 
         proxy_set_header Host \$host;
@@ -174,8 +376,7 @@ if [ -L /etc/nginx/sites-enabled/default ]; then
   rm /etc/nginx/sites-enabled/default
 fi
 
-nginx -t
-systemctl reload nginx
+reload_nginx
 
 certbot --nginx \
   --non-interactive \
@@ -208,48 +409,28 @@ else
 fi
 
 ############################################
-# Build
+# Build/release
 ############################################
-cd ${APP_REPO_DIR}
-sudo -u ${APP_USER} mvn package -DskipTests
-
-JAR=${APP_REPO_DIR}/$(ls target/*.jar | head -n1)
+find_firebase_credentials
+JAR=$(build_release)
 echo "JAR=${JAR}"
 
 ############################################
-# systemd service
+# systemd services
 ############################################
-FIREBASE_CREDENTIALS_JSON=$(find "${APP_DIR}" -maxdepth 1 -type f -name '*firebase-adminsdk*.json' | head -n1 || true)
+write_bat_services "$JAR"
 
-if [ -z "${FIREBASE_CREDENTIALS_JSON}" ]; then
-  echo "Firebase credentials JSON not found in ${APP_DIR}" >&2
-  exit 1
-fi
+systemctl disable bat || true
+systemctl stop bat || true
 
-cat > /etc/systemd/system/bat.service <<EOF
-[Unit]
-Description=BAT Server
-After=network.target mariadb.service
-
-[Service]
-User=${APP_USER}
-WorkingDirectory=${APP_DIR}
-ExecStart=/usr/bin/java -jar ${JAR} \
---server.port=${APP_PORT} \
---spring.datasource.password=${DB_PASS} \
---firebase.credentials.location=file:${FIREBASE_CREDENTIALS_JSON} \
---spring.profiles.active=prod
-Restart=on-failure
-RestartSec=100
-SuccessExitStatus=143
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-systemctl daemon-reload
-systemctl enable bat
-systemctl restart bat
+systemctl enable ${APP_NAME}-blue
+systemctl disable ${APP_NAME}-green || true
+systemctl restart ${APP_NAME}-blue
+wait_for_health "$BLUE_PORT"
+write_nginx_upstream "$BLUE_PORT"
+reload_nginx
+echo "$BLUE_PORT" > "$ACTIVE_PORT_FILE"
+systemctl stop ${APP_NAME}-green || true
 
 echo "Firebase credentials: ${FIREBASE_CREDENTIALS_JSON}"
 
@@ -260,7 +441,8 @@ IP=$(hostname -I | awk '{print $1}')
 
 echo "===================================="
 echo " BAT is running"
-echo " APP url: http://${IP}:${APP_PORT}"
+echo " APP url: http://${IP}:${BLUE_PORT}"
+echo " Active service: ${APP_NAME}-blue"
 echo " DB name: ${DB_NAME}"
 echo " DB User: ${DB_USER}"
 echo "===================================="
