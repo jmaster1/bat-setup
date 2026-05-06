@@ -2,7 +2,6 @@
 
 set -Ee
 set -o pipefail
-set -x
 
 shopt -s inherit_errexit 2>/dev/null || true
 trap 'echo "ERROR: setup.sh failed at line ${LINENO} while running: ${BASH_COMMAND}" >&2' ERR
@@ -186,7 +185,6 @@ load_secrets_for_deploy() {
     exit 1
   fi
 
-  set +x
   source "$SECRETS_FILE"
 
   if [ -z "$GIT_PAT" ]; then
@@ -195,7 +193,6 @@ load_secrets_for_deploy() {
   fi
 
   GIT_AUTH_HEADER=$(printf 'x-access-token:%s' "${GIT_PAT}" | base64 -w0)
-  set -x
 }
 
 find_firebase_credentials() {
@@ -214,9 +211,7 @@ build_release() {
 
   cd "$APP_REPO_DIR"
 
-  set +x
   sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" fetch origin main >&2
-  set -x
 
   sudo -u ${APP_USER} git reset --hard origin/main >&2
   sudo -u ${APP_USER} mvn clean package -DskipTests >&2
@@ -308,7 +303,6 @@ if [ ! -f "$SECRETS_FILE" ]; then
   touch $SECRETS_FILE
 fi
 
-set +x
 source "$SECRETS_FILE" || true
 
 if [ -z "$DB_PASS" ]; then
@@ -327,7 +321,6 @@ if [ -z "$LETSENCRYPT_EMAIL" ]; then
   read -p "Enter Let's Encrypt email: " LETSENCRYPT_EMAIL
   echo "LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}" >> "$SECRETS_FILE"
 fi
-set -x
 
 ############################################
 # Java 21 + Maven
@@ -422,21 +415,15 @@ reload_nginx
 ############################################
 # Git checkout / update
 ############################################
-set +x
 GIT_AUTH_HEADER=$(printf 'x-access-token:%s' "${GIT_PAT}" | base64 -w0)
-set -x
 
 if [ ! -d "$APP_REPO_DIR" ]; then
   echo "Cloning repository..."
-  set +x
   sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" clone ${GIT_REPO} $APP_REPO_DIR
-  set -x
 else
   echo "Updating repository..."
   cd $APP_REPO_DIR
-  set +x
   sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" fetch --all
-  set -x
   sudo -u ${APP_USER} git reset --hard origin/main
 fi
 
