@@ -137,7 +137,26 @@ proxy_pass http://127.0.0.1:${port};
 EOF
 }
 
+ensure_nginx_uses_upstream_snippet() {
+  if [ ! -f "$NGINX_SITE" ]; then
+    return
+  fi
+
+  if grep -qE 'proxy_pass http://127\.0\.0\.1:[0-9]+;' "$NGINX_SITE"; then
+    sed -i -E "s#proxy_pass http://127\.0\.0\.1:[0-9]+;#include ${NGINX_UPSTREAM_SNIPPET};#g" "$NGINX_SITE"
+    return
+  fi
+
+  if grep -q "include ${NGINX_UPSTREAM_SNIPPET};" "$NGINX_SITE"; then
+    return
+  fi
+
+  echo "Nginx BAT site does not contain a localhost proxy_pass to replace: ${NGINX_SITE}" >&2
+  exit 1
+}
+
 reload_nginx() {
+  ensure_nginx_uses_upstream_snippet
   nginx -t
   systemctl reload nginx
 }
@@ -386,6 +405,9 @@ certbot --nginx \
   --keep-until-expiring \
   -d ${APP_DOMAIN} \
   -d ${APP_WWW_DOMAIN}
+
+ensure_nginx_uses_upstream_snippet
+reload_nginx
 
 ############################################
 # Git checkout / update
