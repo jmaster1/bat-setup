@@ -13,13 +13,59 @@ SECRETS_FILE=${APP_DIR}/secrets.txt
 
 APP_REPO_DIR=/opt/bat/repo
 GIT_REPO=https://github.com/jmaster1/bat
+MODE=${1:-bootstrap}
 
 DB_NAME=bat
 DB_USER=bat
 FIREBASE_CREDENTIALS_JSON=
 GIT_AUTH_HEADER=
 
-echo "=== BAT idempotent bootstrap 1.8 ==="
+echo "=== BAT idempotent bootstrap 1.9 (${MODE}) ==="
+
+############################################
+# Fast modes
+############################################
+if [ "$MODE" = "restart" ]; then
+  systemctl restart bat
+  systemctl status bat --no-pager -l
+  exit 0
+fi
+
+if [ "$MODE" = "deploy" ]; then
+  if [ ! -f "$SECRETS_FILE" ]; then
+    echo "Secrets file not found: ${SECRETS_FILE}" >&2
+    exit 1
+  fi
+
+  set +x
+  source $SECRETS_FILE
+
+  if [ -z "$GIT_PAT" ]; then
+    echo "GIT_PAT is not set in ${SECRETS_FILE}" >&2
+    exit 1
+  fi
+
+  GIT_AUTH_HEADER=$(printf 'x-access-token:%s' "${GIT_PAT}" | base64 -w0)
+  set -x
+
+  if [ ! -d "$APP_REPO_DIR" ]; then
+    echo "Repository not found: ${APP_REPO_DIR}. Run bootstrap first." >&2
+    exit 1
+  fi
+
+  cd $APP_REPO_DIR
+
+  set +x
+  sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" fetch origin main
+  set -x
+
+  sudo -u ${APP_USER} git reset --hard origin/main
+  sudo -u ${APP_USER} mvn package -DskipTests
+
+  systemctl restart bat
+  systemctl status bat --no-pager -l
+  exit 0
+fi
 
 ############################################
 # Linux user/app dir
@@ -165,7 +211,7 @@ fi
 # Build
 ############################################
 cd ${APP_REPO_DIR}
-sudo -u ${APP_USER} mvn clean package -DskipTests
+sudo -u ${APP_USER} mvn package -DskipTests
 
 JAR=${APP_REPO_DIR}/$(ls target/*.jar | head -n1)
 echo "JAR=${JAR}"
