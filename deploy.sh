@@ -259,7 +259,5 @@ systemctl status "$NEXT_SERVICE" --no-pager -l
 echo "===================================="
 echo " BAT deploy complete"
 echo " Active service: ${NEXT_SERVICE}"
-echo " Active port: ${NEXT_PORT}"
 echo " Old service stopped: ${ACTIVE_SERVICE}"
-echo " Sessions on old instance were dropped"
 echo "===================================="
