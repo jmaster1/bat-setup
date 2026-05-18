@@ -84,6 +84,15 @@ ensure_database() {
   mysql -e "FLUSH PRIVILEGES;"
 }
 
+ensure_app_user_and_dirs() {
+  if ! id "$APP_USER" >/dev/null 2>&1; then
+    useradd -r -m -d "${APP_DIR}" -s /bin/bash "${APP_USER}"
+  fi
+
+  mkdir -p "$APP_DIR" "$RELEASES_DIR"
+  chown -R ${APP_USER}:${APP_USER} "$APP_DIR"
+}
+
 load_secrets() {
   if [ -f "$SECRETS_FILE" ]; then
     source "$SECRETS_FILE"
@@ -142,6 +151,7 @@ build_release() {
 }
 
 load_secrets
+ensure_app_user_and_dirs
 ensure_database
 
 checkout_or_update_repo
