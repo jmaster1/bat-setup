@@ -84,41 +84,39 @@ ensure_database() {
 }
 
 load_secrets() {
-  if [ ! -f "$SECRETS_FILE" ]; then
-    echo "Secrets file not found: ${SECRETS_FILE}. Run setup-geolog.sh first or create it manually." >&2
-    exit 1
+  if [ -f "$SECRETS_FILE" ]; then
+    source "$SECRETS_FILE"
   fi
-
-  source "$SECRETS_FILE"
 
   DB_NAME=${DB_NAME:-geolog}
   DB_USER=${DB_USER:-geolog}
+  DB_PASS=${DB_PASS:-geolog}
   GEOLOG_SECURITY_USERNAME=${GEOLOG_SECURITY_USERNAME:-geolog}
   GEOLOG_SECURITY_PASSWORD=${GEOLOG_SECURITY_PASSWORD:-geolog}
 
-  if [ -z "$DB_PASS" ]; then
-    echo "DB_PASS is not set in ${SECRETS_FILE}" >&2
-    exit 1
+  if [ -n "${GIT_PAT:-}" ]; then
+    GIT_AUTH_HEADER=$(printf 'x-access-token:%s' "${GIT_PAT}" | base64 -w0)
   fi
-
-  if [ -z "$GIT_PAT" ]; then
-    echo "GIT_PAT is not set in ${SECRETS_FILE}" >&2
-    exit 1
-  fi
-
-  GIT_AUTH_HEADER=$(printf 'x-access-token:%s' "${GIT_PAT}" | base64 -w0)
 }
 
 checkout_or_update_repo() {
   if [ ! -d "$APP_REPO_DIR" ]; then
     echo "Cloning repository..."
-    sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" clone ${GIT_REPO} "$APP_REPO_DIR" >&2
+    if [ -n "$GIT_AUTH_HEADER" ]; then
+      sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" clone ${GIT_REPO} "$APP_REPO_DIR" >&2
+    else
+      sudo -u ${APP_USER} git clone ${GIT_REPO} "$APP_REPO_DIR" >&2
+    fi
     return
   fi
 
   echo "Updating repository..."
   cd "$APP_REPO_DIR"
-  sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" fetch --all >&2
+  if [ -n "$GIT_AUTH_HEADER" ]; then
+    sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" fetch --all >&2
+  else
+    sudo -u ${APP_USER} git fetch --all >&2
+  fi
   sudo -u ${APP_USER} git reset --hard origin/main >&2
 }
 
