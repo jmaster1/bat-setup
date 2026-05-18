@@ -7,7 +7,7 @@ shopt -s inherit_errexit 2>/dev/null || true
 trap 'echo "ERROR: deploy-geolog.sh failed at line ${LINENO} while running: ${BASH_COMMAND}" >&2' ERR
 
 APP_NAME=geolog
-SCRIPT_VERSION=2
+SCRIPT_VERSION=3
 APP_USER=geolog
 APP_DIR=/opt/geolog
 SECRETS_FILE=${APP_DIR}/secrets.txt
@@ -94,9 +94,12 @@ ensure_app_user_and_dirs() {
 }
 
 load_secrets() {
-  if [ -f "$SECRETS_FILE" ]; then
-    source "$SECRETS_FILE"
+  if [ ! -f "$SECRETS_FILE" ]; then
+    echo "Secrets file not found: ${SECRETS_FILE}. Create it with GIT_PAT before deploy." >&2
+    exit 1
   fi
+
+  source "$SECRETS_FILE"
 
   DB_NAME=${DB_NAME:-geolog}
   DB_USER=${DB_USER:-geolog}
@@ -104,29 +107,24 @@ load_secrets() {
   GEOLOG_SECURITY_USERNAME=${GEOLOG_SECURITY_USERNAME:-geolog}
   GEOLOG_SECURITY_PASSWORD=${GEOLOG_SECURITY_PASSWORD:-geolog}
 
-  if [ -n "${GIT_PAT:-}" ]; then
-    GIT_AUTH_HEADER=$(printf 'x-access-token:%s' "${GIT_PAT}" | base64 -w0)
+  if [ -z "${GIT_PAT:-}" ]; then
+    echo "GIT_PAT is not set in ${SECRETS_FILE}" >&2
+    exit 1
   fi
+
+  GIT_AUTH_HEADER=$(printf 'x-access-token:%s' "${GIT_PAT}" | base64 -w0)
 }
 
 checkout_or_update_repo() {
   if [ ! -d "$APP_REPO_DIR" ]; then
     echo "Cloning repository..."
-    if [ -n "$GIT_AUTH_HEADER" ]; then
-      sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" clone ${GIT_REPO} "$APP_REPO_DIR" >&2
-    else
-      sudo -u ${APP_USER} git clone ${GIT_REPO} "$APP_REPO_DIR" >&2
-    fi
+    sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" clone ${GIT_REPO} "$APP_REPO_DIR" >&2
     return
   fi
 
   echo "Updating repository..."
   cd "$APP_REPO_DIR"
-  if [ -n "$GIT_AUTH_HEADER" ]; then
-    sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" fetch --all >&2
-  else
-    sudo -u ${APP_USER} git fetch --all >&2
-  fi
+  sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" fetch --all >&2
   sudo -u ${APP_USER} git reset --hard origin/main >&2
 }
 
