@@ -7,6 +7,7 @@ shopt -s inherit_errexit 2>/dev/null || true
 trap 'echo "ERROR: deploy-geolog.sh failed at line ${LINENO} while running: ${BASH_COMMAND}" >&2' ERR
 
 APP_NAME=geolog
+SCRIPT_VERSION=1
 APP_USER=geolog
 APP_DIR=/opt/geolog
 SECRETS_FILE=${APP_DIR}/secrets.txt
@@ -23,7 +24,7 @@ HEALTH_TIMEOUT_SECONDS=90
 GIT_AUTH_HEADER=
 BUILD_RELEASE_JAR=
 
-echo "=== GeoLog deploy ==="
+echo "=== GeoLog deploy v${SCRIPT_VERSION} ==="
 
 write_geolog_service() {
   local jar=$1
@@ -157,6 +158,7 @@ systemctl status "$SERVICE_NAME" --no-pager -l
 
 echo "===================================="
 echo " GeoLog deploy complete"
+echo " Script version: ${SCRIPT_VERSION}"
 echo " Service: ${SERVICE_NAME}"
 echo " Port: ${APP_PORT}"
 echo " Jar: ${BUILD_RELEASE_JAR}"
