@@ -7,7 +7,7 @@ shopt -s inherit_errexit 2>/dev/null || true
 trap 'echo "ERROR: deploy-geolog.sh failed at line ${LINENO} while running: ${BASH_COMMAND}" >&2' ERR
 
 APP_NAME=geolog
-SCRIPT_VERSION=1
+SCRIPT_VERSION=2
 APP_USER=geolog
 APP_DIR=/opt/geolog
 SECRETS_FILE=${APP_DIR}/secrets.txt
