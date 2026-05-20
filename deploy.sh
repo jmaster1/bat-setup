@@ -11,8 +11,11 @@ APP_USER=bat
 APP_DIR=/opt/bat
 SECRETS_FILE=${APP_DIR}/secrets.txt
 
-APP_REPO_DIR=/opt/bat/repo
+APP_REPO_DIR=${APP_DIR}/repo
 GIT_REPO=https://github.com/jmaster1/bat
+
+JMASTER_REPO_DIR=${APP_DIR}/jmaster-web
+JMASTER_GIT_REPO=https://github.com/jmaster1/jmaster-web
 
 PORT_8088=8088
 PORT_8089=8089
@@ -26,7 +29,7 @@ FIREBASE_CREDENTIALS_JSON=
 GIT_AUTH_HEADER=
 BUILD_RELEASE_JAR=
 
-echo "=== BAT deploy ==="
+echo "=== BAT deploy v 10 ==="
 
 service_name_for_port() {
   local port=$1
@@ -197,10 +200,12 @@ build_release() {
   local jar=
   mkdir -p "$release_dir"
 
-  cd "$APP_REPO_DIR"
+  echo "Building jmaster-web..."
+  cd "$JMASTER_REPO_DIR"
+  sudo -u ${APP_USER} mvn clean install -DskipTests >&2
 
-  sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" fetch origin main >&2
-  sudo -u ${APP_USER} git reset --hard origin/main >&2
+  echo "Building bat..."
+  cd "$APP_REPO_DIR"
   sudo -u ${APP_USER} mvn clean package -DskipTests >&2
 
   jar=$(find target -maxdepth 1 -type f -name "${APP_NAME}-*.jar" ! -name "*.original" -print -quit)
@@ -215,14 +220,18 @@ build_release() {
 }
 
 checkout_or_update_repo() {
-  if [ ! -d "$APP_REPO_DIR" ]; then
-    echo "Cloning repository..."
-    sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" clone ${GIT_REPO} "$APP_REPO_DIR" >&2
+  local repo_dir=$1
+  local git_repo=$2
+  local repo_name=$3
+
+  if [ ! -d "$repo_dir" ]; then
+    echo "Cloning ${repo_name} repository..."
+    sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" clone ${git_repo} "$repo_dir" >&2
     return
   fi
 
-  echo "Updating repository..."
-  cd "$APP_REPO_DIR"
+  echo "Updating ${repo_name} repository..."
+  cd "$repo_dir"
   sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" fetch --all >&2
   sudo -u ${APP_USER} git reset --hard origin/main >&2
 }
@@ -230,7 +239,8 @@ checkout_or_update_repo() {
 load_secrets
 find_firebase_credentials
 
-checkout_or_update_repo
+checkout_or_update_repo "$JMASTER_REPO_DIR" "$JMASTER_GIT_REPO" "jmaster-web"
+checkout_or_update_repo "$APP_REPO_DIR" "$GIT_REPO" "$APP_NAME"
 build_release
 
 NEW_JAR=$BUILD_RELEASE_JAR
