@@ -4,7 +4,7 @@ set -Ee
 set -o pipefail
 
 shopt -s inherit_errexit 2>/dev/null || true
-trap 'echo "ERROR: deploy-geolog.sh failed at line ${LINENO} while running: ${BASH_COMMAND}" >&2' ERR
+trap 'echo "ERROR: deploy.sh failed at line ${LINENO} while running: ${BASH_COMMAND}" >&2' ERR
 
 APP_NAME=geolog
 SCRIPT_VERSION=3
