@@ -7,7 +7,7 @@ shopt -s inherit_errexit 2>/dev/null || true
 trap 'echo "ERROR: deploy.sh failed at line ${LINENO} while running: ${BASH_COMMAND}" >&2' ERR
 
 APP_NAME=geolog
-SCRIPT_VERSION=3
+SCRIPT_VERSION=4
 APP_USER=geolog
 APP_DIR=/opt/geolog
 SECRETS_FILE=${APP_DIR}/secrets.txt
@@ -15,6 +15,8 @@ SECRETS_FILE=${APP_DIR}/secrets.txt
 APP_REPO_DIR=/opt/geolog/repo
 SERVER_REPO_DIR=${APP_REPO_DIR}/server
 GIT_REPO=${GIT_REPO:-https://github.com/jmaster1/geolog}
+JMASTER_REPO_DIR=/opt/geolog/jmaster-web
+JMASTER_GIT_REPO=${JMASTER_GIT_REPO:-https://github.com/jmaster1/jmaster-web}
 
 APP_PORT=${APP_PORT:-8080}
 SERVICE_NAME=geolog
@@ -116,16 +118,25 @@ load_secrets() {
 }
 
 checkout_or_update_repo() {
-  if [ ! -d "$APP_REPO_DIR" ]; then
-    echo "Cloning repository..."
-    sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" clone ${GIT_REPO} "$APP_REPO_DIR" >&2
+  local repo_url=$1
+  local repo_dir=$2
+  local repo_name=$3
+
+  if [ ! -d "$repo_dir" ]; then
+    echo "Cloning ${repo_name} repository..."
+    sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" clone "$repo_url" "$repo_dir" >&2
     return
   fi
 
-  echo "Updating repository..."
-  cd "$APP_REPO_DIR"
+  echo "Updating ${repo_name} repository..."
+  cd "$repo_dir"
   sudo -u ${APP_USER} git -c http.extraHeader="Authorization: Basic ${GIT_AUTH_HEADER}" fetch --all >&2
   sudo -u ${APP_USER} git reset --hard origin/main >&2
+}
+
+install_jmaster_web() {
+  cd "$JMASTER_REPO_DIR"
+  sudo -u ${APP_USER} mvn clean install -DskipTests >&2
 }
 
 build_release() {
@@ -152,7 +163,9 @@ load_secrets
 ensure_app_user_and_dirs
 ensure_database
 
-checkout_or_update_repo
+checkout_or_update_repo "$JMASTER_GIT_REPO" "$JMASTER_REPO_DIR" "jmaster-web"
+checkout_or_update_repo "$GIT_REPO" "$APP_REPO_DIR" "geolog"
+install_jmaster_web
 build_release
 
 write_geolog_service "$BUILD_RELEASE_JAR"
