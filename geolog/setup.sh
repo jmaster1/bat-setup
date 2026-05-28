@@ -7,7 +7,7 @@ shopt -s inherit_errexit 2>/dev/null || true
 trap 'echo "ERROR: setup.sh failed at line ${LINENO} while running: ${BASH_COMMAND}" >&2' ERR
 
 APP_NAME=geolog
-SCRIPT_VERSION=2
+SCRIPT_VERSION=3
 APP_USER=geolog
 APP_DIR=/opt/geolog
 APP_DOMAIN=geolog.jmaster.online
@@ -41,12 +41,12 @@ ensure_app_user_and_dirs() {
 
 ensure_apk_dir() {
   mkdir -p "$APK_DIR"
-  chown ${APP_USER}:www-data "$APK_DIR"
-  chmod 750 "$APK_DIR"
+  chown ${APP_USER}:${APP_USER} "$APK_DIR"
+  chmod 755 "$APP_DIR" "$APK_DIR"
 
   if [ -f "$APK_FILE" ]; then
-    chown ${APP_USER}:www-data "$APK_FILE"
-    chmod 640 "$APK_FILE"
+    chown ${APP_USER}:${APP_USER} "$APK_FILE"
+    chmod 644 "$APK_FILE"
   fi
 }
 
