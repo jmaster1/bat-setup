@@ -7,7 +7,7 @@ shopt -s inherit_errexit 2>/dev/null || true
 trap 'echo "ERROR: setup.sh failed at line ${LINENO} while running: ${BASH_COMMAND}" >&2' ERR
 
 APP_NAME=geolog
-SCRIPT_VERSION=1
+SCRIPT_VERSION=2
 APP_USER=geolog
 APP_DIR=/opt/geolog
 APP_DOMAIN=geolog.jmaster.online
@@ -15,6 +15,8 @@ SECRETS_FILE=${APP_DIR}/secrets.txt
 
 APP_PORT=${APP_PORT:-8080}
 RELEASES_DIR=${APP_DIR}/releases
+APK_DIR=${APP_DIR}/apk
+APK_FILE=${APK_DIR}/app-release.apk
 NGINX_SITE=/etc/nginx/sites-available/geolog
 NGINX_ENABLED_SITE=/etc/nginx/sites-enabled/geolog
 
@@ -33,8 +35,19 @@ ensure_app_user_and_dirs() {
     useradd -r -m -d "${APP_DIR}" -s /bin/bash "${APP_USER}"
   fi
 
-  mkdir -p "$APP_DIR" "$RELEASES_DIR"
+  mkdir -p "$APP_DIR" "$RELEASES_DIR" "$APK_DIR"
   chown -R ${APP_USER}:${APP_USER} "$APP_DIR"
+}
+
+ensure_apk_dir() {
+  mkdir -p "$APK_DIR"
+  chown ${APP_USER}:www-data "$APK_DIR"
+  chmod 750 "$APK_DIR"
+
+  if [ -f "$APK_FILE" ]; then
+    chown ${APP_USER}:www-data "$APK_FILE"
+    chmod 640 "$APK_FILE"
+  fi
 }
 
 ensure_secret() {
@@ -126,6 +139,12 @@ server {
     listen 80;
     server_name ${APP_DOMAIN};
 
+    location = /apk {
+        alias ${APK_FILE};
+        default_type application/vnd.android.package-archive;
+        add_header Content-Disposition 'attachment; filename="geolog.apk"';
+    }
+
     location / {
         proxy_pass http://127.0.0.1:${APP_PORT};
         proxy_http_version 1.1;
@@ -165,6 +184,7 @@ ensure_ssl() {
 ensure_app_user_and_dirs
 load_or_create_secrets
 ensure_packages
+ensure_apk_dir
 ensure_database
 write_nginx_site
 ensure_firewall
