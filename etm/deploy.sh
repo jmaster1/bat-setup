@@ -7,13 +7,13 @@ shopt -s inherit_errexit 2>/dev/null || true
 trap 'echo "ERROR: deploy.sh failed at line ${LINENO} while running: ${BASH_COMMAND}" >&2' ERR
 
 APP_NAME=etm
-SCRIPT_VERSION=5
+SCRIPT_VERSION=6
 APP_USER=etm
 APP_DIR=/opt/etm
 SECRETS_FILE=${APP_DIR}/secrets.txt
 
 APP_REPO_DIR=/opt/etm/repo
-SERVER_REPO_DIR=${APP_REPO_DIR}/server
+SERVER_REPO_DIR=${APP_REPO_DIR}
 GIT_REPO=${GIT_REPO:-https://github.com/jmaster1/elisa-traffic-mon}
 JMASTER_REPO_DIR=/opt/etm/jmaster-web
 JMASTER_GIT_REPO=${JMASTER_GIT_REPO:-https://github.com/jmaster1/jmaster-web}
